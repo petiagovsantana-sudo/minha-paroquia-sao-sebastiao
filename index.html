@@ -1,355 +1,738 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#792A25">
-<title>Minha Paróquia São Sebastião - Demonstração</title>
-<link href="https://fonts.googleapis.com/css2?family=Petrona:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Minha Paróquia São Sebastião — Demonstração</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Petrona:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bordo: #792A25; --dourado: #C09D4D; --creme: #FFF7EB;
-    --verde: #196F4E; --azul: #174870; --texto: #2b2b2b; --branco: #ffffff;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: 'Petrona', Georgia, serif; font-size: 18px; color: var(--texto); background: var(--creme); }
-  header { background: var(--bordo); color: var(--creme); padding: 16px; text-align: center; }
-  header h1 { margin: 0; font-size: 22px; }
-  header small { opacity: .85; }
-  nav { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: var(--branco); border-bottom: 2px solid var(--dourado); position: sticky; top: 0; z-index: 5; }
-  nav button { flex: 1 1 auto; padding: 10px; font-size: 16px; border: 1px solid var(--dourado); background: var(--creme); color: var(--bordo); border-radius: 6px; cursor: pointer; }
-  nav button.ativo { background: var(--bordo); color: var(--creme); }
-  main { padding: 16px; max-width: 900px; margin: 0 auto; }
-  .aviso { background: #fff3cd; border: 1px solid var(--dourado); padding: 10px; border-radius: 6px; font-size: 15px; margin-bottom: 14px; }
-  .card { background: var(--branco); border-left: 5px solid var(--dourado); padding: 14px; border-radius: 6px; margin-bottom: 12px; }
-  .card h3 { margin: 0 0 6px; color: var(--bordo); font-size: 19px; }
-  .card p { margin: 4px 0; }
-  .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 14px; color: #fff; }
-  .s-pendente { background: var(--dourado); }
-  .s-aprovada { background: var(--verde); }
-  .s-devolvida { background: var(--azul); }
-  .s-nao { background: var(--bordo); }
-  button.acao, input[type=submit] { padding: 10px 14px; font-size: 16px; border: none; border-radius: 6px; background: var(--verde); color: #fff; cursor: pointer; margin: 4px 4px 4px 0; }
-  button.perigo { background: var(--bordo); }
-  button.neutro { background: var(--azul); }
-  input, select, textarea { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #bbb; border-radius: 6px; margin: 4px 0 10px; font-family: inherit; }
-  label { font-size: 16px; }
-  table { width: 100%; border-collapse: collapse; background: var(--branco); font-size: 16px; }
-  th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
-  th { background: var(--creme); color: var(--bordo); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px; }
-  .indicador { background: var(--branco); padding: 14px; border-radius: 6px; text-align: center; border-top: 4px solid var(--verde); }
-  .indicador b { font-size: 28px; color: var(--bordo); display: block; }
-  .login { max-width: 420px; margin: 30px auto; background: var(--branco); padding: 20px; border-radius: 8px; border-top: 5px solid var(--dourado); }
-  .login button { width: 100%; margin-bottom: 8px; }
-  h2 { color: var(--bordo); margin-top: 6px; }
+:root{--wine:#792A25;--gold:#C09D4D;--cream:#FFF7EB;--green:#196F4E;--blue:#174870;--line:#e8e3dc;--ink:#302d2b}
+*{box-sizing:border-box}
+body{margin:0;background:#f5f2ed;color:var(--ink);font:15px 'Petrona',Georgia,serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+header{background:var(--wine);color:var(--cream);padding:16px 18px 12px}
+.brand{display:flex;align-items:center;gap:12px;max-width:1050px;margin:auto}
+.symbol{height:44px;width:44px;display:grid;place-items:center;border:1px solid var(--gold);border-radius:8px;font-size:22px;flex:none}
+.brand h1{font:800 21px 'Petrona',Georgia,serif;margin:0}
+.brand small{opacity:.88;font-size:12px}
+.demo{margin-left:auto;border:1px solid var(--gold);border-radius:99px;padding:4px 9px;font-size:11px;white-space:nowrap}
+.note{max-width:1050px;margin:8px auto 0;font-size:12px;opacity:.85}
+.topbar{max-width:1050px;margin:0 auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;font-size:13px;background:white;border-bottom:1px solid var(--line)}
+.topbar span{flex:1;min-width:200px}
+.tabs{position:sticky;top:0;z-index:5;background:white;display:flex;gap:3px;overflow:auto;border-bottom:1px solid var(--line);padding:8px max(10px,calc((100vw - 1050px)/2))}
+.tabs button{white-space:nowrap;background:transparent;border:0;border-radius:7px;padding:10px 12px;color:#6d6763;font-size:13px;font-weight:700}
+.tabs button.active{background:var(--wine);color:white}
+main{max-width:1050px;margin:0 auto;padding:18px 14px 55px;min-height:65vh}
+.title{font:800 24px 'Petrona',Georgia,serif;margin:0 0 4px;color:var(--wine)}
+.muted{font-size:13px;color:#77716d}
+.card{background:white;border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+.banner{background:var(--cream);border-color:#e5d5b6}
+.banner h2{font:800 22px 'Petrona',Georgia,serif;margin:0 0 8px;color:var(--wine)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:white;border:1px solid var(--line);border-radius:10px;padding:13px}
+.stat strong{display:block;font-size:28px;margin-top:6px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border:0}
+.item b{display:block}
+.btn{border:0;border-radius:8px;background:var(--green);color:white;font-weight:700;font-size:14px;padding:11px 14px;min-height:42px}
+.btn.wine{background:var(--wine)}
+.btn.blue{background:var(--blue)}
+.btn.outline{background:white;border:1px solid #cfc8c2;color:var(--ink)}
+.btn.small{min-height:34px;padding:7px 10px;font-size:13px}
+.btn:disabled{opacity:.45}
+.tag{display:inline-block;background:#f3f1ed;border-radius:99px;font-size:12px;color:#615c58;padding:4px 9px;margin:6px 4px 0 0}
+.tag.pend{background:#fbf1dc;color:#7a5a12}
+.tag.ok{background:#e6f2e9;color:#145d3d}
+.tag.nao{background:#f6e6e4;color:var(--wine)}
+label{display:block;font-weight:700;font-size:13px;margin:12px 0 5px}
+.check{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;margin:7px 0}
+.check input{width:20px;height:20px;min-height:20px;margin:0}
+.check.off{opacity:.5}
+input[type=text],input:not([type]),input[type=date],input[type=time],select,textarea{width:100%;border:1px solid #ccc5bd;border-radius:8px;background:white;padding:11px;min-height:42px;color:var(--ink);font-size:15px}
+textarea{resize:vertical}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toast{background:#e6f2e9;color:#145d3d;padding:12px;border-radius:8px;margin-bottom:13px;font-size:14px}
+.datebox{min-width:58px;text-align:center;background:#f1f5f2;color:var(--green);padding:9px 5px;border-radius:8px;font-size:12px;font-weight:800}
+.foot{text-align:center;padding:18px;font-size:12px;color:#736c66}
+.inicio{max-width:560px;margin:24px auto}
+.escolha{display:block;width:100%;margin:10px 0;padding:16px;text-align:left;border-radius:12px;border:1px solid var(--line);background:white;color:var(--ink)}
+.escolha b{display:block;font-size:17px;color:var(--wine)}
+.escolha small{font-size:13px;color:#77716d}
+.caixa{max-width:520px;margin:24px auto;background:white;border:1px solid var(--line);border-top:5px solid var(--gold);border-radius:12px;padding:20px;position:relative;isolation:isolate;overflow:hidden}
+/* Fundo com o padrão da marca (arquivo padrao.png no repositório), desfocado. Sem o arquivo, fica só o creme. */
+.inicio,.caixa{isolation:isolate}
+.inicio::before,.caixa::before{content:'';position:absolute;inset:-24px;background:var(--cream) url('padrao.png') center/360px repeat;filter:blur(5px);opacity:.28;z-index:-1;pointer-events:none}
+.inicio{position:relative}
+.logo-centro{display:block;margin:0 auto 10px;max-height:110px;max-width:220px;object-fit:contain}
+img.symbol{padding:4px;background:var(--cream);object-fit:contain}
+.soon{opacity:.85}
+.pill{font-size:12px;background:var(--cream);border:1px solid var(--gold);color:var(--wine);border-radius:99px;padding:3px 8px;white-space:nowrap}
+.bloco{background:#fbfaf7;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px}
+details{background:white;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
+summary{cursor:pointer;font-weight:700;color:var(--wine);font-size:16px}
+@media(max-width:600px){.grid3{grid-template-columns:repeat(2,minmax(0,1fr))}.grid,.row2{grid-template-columns:1fr}.item{align-items:flex-start;flex-direction:column}.brand h1{font-size:18px}.title{font-size:21px}.demo{display:none}}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Minha Paróquia São Sebastião</h1>
-  <small>Anitápolis – SC · Arquidiocese de Florianópolis</small>
+  <div class="brand">
+    <img class="symbol" src="logo.png" alt="Logomarca da Paróquia São Sebastião" onerror="this.outerHTML='<div class=&quot;symbol&quot; aria-hidden=&quot;true&quot;>✝</div>'">
+    <div><h1>Minha Paróquia</h1><small>São Sebastião · Anitápolis/SC</small></div>
+    <span class="demo">DEMO</span>
+  </div>
+  <div class="note">Demonstração · dados fictícios · símbolo provisório</div>
 </header>
 
-<div id="app"></div>
+<div id="topo"></div>
+<nav class="tabs" id="tabs" aria-label="Menu principal"></nav>
+<main id="app"></main>
+<footer class="foot">Protótipo de testes · Não realiza registros ou aprovações oficiais · Não insira dados pessoais reais.</footer>
 
 <script>
-/* ===================== DADOS INICIAIS (FICTÍCIOS) ===================== */
-const DADOS_INICIAIS = {
+(() => {
+'use strict';
+
+/* ================= COMUNIDADES (17) ================= */
+const UNIDADES = [
+  { nome: 'Matriz São Sebastião', bairro: 'Centro' },
+  { nome: 'Santo Antônio', bairro: 'Varginha' },
+  { nome: 'São Domingos', bairro: 'Rio do Meio' },
+  { nome: 'Santa Bárbara', bairro: 'Rio da Prata' },
+  { nome: 'São Francisco de Sales', bairro: 'Maracujá' },
+  { nome: 'Nossa Senhora da Glória', bairro: 'Santa Maria' },
+  { nome: 'Nossa Senhora das Graças', bairro: 'Rio do Ouro' },
+  { nome: 'São Pedro e São Paulo', bairro: 'Rio dos Pinheiros' },
+  { nome: 'São José', bairro: 'Rio do Sul' },
+  { nome: 'Senhor Bom Jesus', bairro: 'Rio Branco' },
+  { nome: 'Divino Espírito Santo', bairro: 'Rio Cachimbo' },
+  { nome: 'Santa Teresinha', bairro: 'Povoamento Igreja' },
+  { nome: 'Sagrado Coração de Jesus', bairro: 'Salto' },
+  { nome: 'Santa Paulina', bairro: 'Barra Gaspar' },
+  { nome: 'Santa Cecília', bairro: 'Povoamento Escola' },
+  { nome: 'São Miguel', bairro: 'Serrinha · situação a confirmar' },
+  { nome: 'Acampamento São Padre Pio', bairro: 'Local a confirmar' }
+];
+const NOMES_UNIDADES = UNIDADES.map(u => u.nome);
+
+/* ================= PERMISSÕES E FUNÇÕES ================= */
+const PERMISSOES = [
+  ['verPainel', 'Ver painel do pároco'],
+  ['verTodasSolicitacoes', 'Ver solicitações de todos (sem isso, vê só as próprias)'],
+  ['criarSolicitacao', 'Criar solicitações'],
+  ['encaminhar', 'Encaminhar solicitações ao pároco'],
+  ['decidir', 'Aprovar, devolver ou não aprovar'],
+  ['cadastrarFieis', 'Cadastrar fiéis de qualquer comunidade e confirmar cadastros'],
+  ['cadastrarGrupo', 'Cadastrar fiéis apenas da própria comunidade ou grupo'],
+  ['agendar', 'Incluir na agenda'],
+  ['tarefas', 'Gerenciar tarefas'],
+  ['financeiro', 'Ver financeiro'],
+  ['administrar', 'Acessar Administradores e dar permissões']
+];
+const TODAS = PERMISSOES.map(([k]) => k);
+// Só o pároco pode conceder ou alterar estas permissões.
+const SO_PADRE = ['decidir', 'financeiro', 'administrar'];
+
+const FUNCOES = {
+  fiel:       { nome: 'Fiel', perms: ['criarSolicitacao'] },
+  lideranca:  { nome: 'Coordenador de comunidade ou pastoral', perms: ['criarSolicitacao', 'agendar', 'tarefas', 'cadastrarGrupo'] },
+  catequista: { nome: 'Catequista', perms: ['criarSolicitacao', 'agendar', 'cadastrarGrupo'] },
+  conselho:   { nome: 'Conselho (CPP ou CAE)', perms: ['verTodasSolicitacoes', 'agendar', 'tarefas'] },
+  secretaria: { nome: 'Secretaria', perms: ['criarSolicitacao', 'verTodasSolicitacoes', 'encaminhar', 'cadastrarFieis', 'agendar', 'tarefas', 'administrar'] },
+  padre:      { nome: 'Pároco', perms: TODAS }
+};
+
+function permsDe(funcoes) {
+  const p = {};
+  TODAS.forEach(k => p[k] = false);
+  funcoes.forEach(f => FUNCOES[f].perms.forEach(k => p[k] = true));
+  return p;
+}
+
+const ROTULOS = {
+  paroco: 'Painel', solicitacoes: 'Solicitações', cadastro: 'Cadastro de fiéis', admin: 'Administradores',
+  comunidades: 'Comunidades', agenda: 'Agenda', tarefas: 'Tarefas', financeiro: 'Financeiro', emBreve: 'Módulos'
+};
+
+/* ================= DADOS INICIAIS (FICTÍCIOS) ================= */
+const SEED = {
   pessoas: [
-    { id: 1, nome: "Maria Exemplo", telefone: "(48) 90000-0001", comunidade: "Matriz", funcao: "Catequista" },
-    { id: 2, nome: "José Exemplo", telefone: "(48) 90000-0002", comunidade: "Santa Cecília", funcao: "Coordenador de pastoral" },
-    { id: 3, nome: "Ana Exemplo", telefone: "(48) 90000-0003", comunidade: "Matriz", funcao: "Fiel" }
-  ],
-  comunidades: [
-    { id: 1, nome: "Matriz São Sebastião", padroeiro: "São Sebastião", local: "Centro de Anitápolis", coordenacao: "Conselho da Matriz" },
-    { id: 2, nome: "Capela Santa Cecília", padroeiro: "Santa Cecília", local: "Povoamento Escola", coordenacao: "Conselho de Santa Cecília" }
+    { id: 1, nome: 'Pe. Exemplo (pároco)', telefone: '(48) 90000-0001', comunidade: NOMES_UNIDADES[0], funcoes: ['padre'], perms: permsDe(['padre']), situacao: 'ativo' },
+    { id: 2, nome: 'Maria Exemplo (secretária)', telefone: '(48) 90000-0002', comunidade: NOMES_UNIDADES[0], funcoes: ['secretaria'], perms: permsDe(['secretaria']), situacao: 'ativo' },
+    { id: 3, nome: 'José Exemplo (coordenador)', telefone: '(48) 90000-0003', comunidade: NOMES_UNIDADES[14], funcoes: ['lideranca', 'catequista'], perms: permsDe(['lideranca', 'catequista']), situacao: 'ativo' },
+    { id: 4, nome: 'Ana Exemplo', telefone: '(48) 90000-0004', comunidade: NOMES_UNIDADES[0], funcoes: ['fiel'], perms: permsDe(['fiel']), situacao: 'ativo' },
+    { id: 5, nome: 'João Exemplo', telefone: '(48) 90000-0005', comunidade: NOMES_UNIDADES[1], funcoes: ['fiel'], perms: permsDe(['fiel']), situacao: 'aguardando conferência' }
   ],
   solicitacoes: [
-    { id: 1, tipo: "Certidão de batismo", solicitante: "Maria Exemplo", situacao: "pendente", orientacao: "" },
-    { id: 2, tipo: "Reserva do salão paroquial", solicitante: "José Exemplo", situacao: "pendente", orientacao: "" },
-    { id: 3, tipo: "Agendamento de bênção de casa", solicitante: "Ana Exemplo", situacao: "aprovada", orientacao: "Visita marcada para sábado." }
+    { id: 1, titulo: 'Reserva de salão', unidade: NOMES_UNIDADES[14], tipo: 'Reserva de espaço',
+      detalhe: 'Pedido fictício de uso do salão. A disponibilidade deve ser conferida pela Secretaria.',
+      status: 'Pendente', origem: 3, obs: '' },
+    { id: 2, titulo: 'Atualização de coordenação', unidade: NOMES_UNIDADES[14], tipo: 'Gestão institucional',
+      detalhe: 'Atualização fictícia sujeita à conferência documental e à aprovação competente.',
+      status: 'Encaminhada', origem: 3, obs: 'Encaminhado pela Secretaria para decisão do pároco.' },
+    { id: 3, titulo: 'Certidão de batismo (exemplo)', unidade: NOMES_UNIDADES[0], tipo: 'Documento sacramental',
+      detalhe: 'Pedido fictício. A conferência é feita nos livros paroquiais oficiais.',
+      status: 'Pendente', origem: 4, obs: '' }
   ],
-  agenda: [
-    { id: 1, data: "2026-11-01", hora: "19:00", evento: "Missa de Finados - Matriz", local: "Igreja Matriz" },
-    { id: 2, data: "2026-11-07", hora: "08:00", evento: "Reunião do Conselho de Pastoral", local: "Salão paroquial" },
-    { id: 3, data: "2026-11-14", hora: "14:00", evento: "Encontro da catequese", local: "Capela Santa Cecília" }
+  eventos: [
+    { data: '2026-11-01', hora: '14:30', nome: 'Missa da Partilha', unidade: NOMES_UNIDADES[14] },
+    { data: '2026-11-01', hora: '16:30', nome: 'Missa da Partilha', unidade: NOMES_UNIDADES[11] },
+    { data: '2026-11-02', hora: '19:00', nome: 'Missa de Finados', unidade: NOMES_UNIDADES[0] }
   ],
   tarefas: [
-    { id: 1, titulo: "Revisar relatório de fiéis", responsavel: "Secretaria", prazo: "2026-11-05", prioridade: "Alta", situacao: "Em andamento" },
-    { id: 2, titulo: "Preparar divulgação da festa", responsavel: "PASCOM", prazo: "2026-12-01", prioridade: "Média", situacao: "Não iniciada" }
+    { nome: 'Conferir programação de Finados', unidade: 'Secretaria', feita: false },
+    { nome: 'Revisar solicitações pendentes', unidade: 'Paróquia', feita: false },
+    { nome: 'Preparar reunião comunitária', unidade: NOMES_UNIDADES[14], feita: false }
   ],
   financeiro: [
-    { mes: "Setembro/2026", entradas: 4200, saidas: 3100, unidade: "Matriz" },
-    { mes: "Outubro/2026", entradas: 3850, saidas: 2700, unidade: "Matriz" }
+    { unidade: 'Paróquia (administração central)', mes: 'Outubro/2026', entradas: 3000, saidas: 1800 },
+    { unidade: 'Matriz São Sebastião', mes: 'Outubro/2026', entradas: 4200, saidas: 3100 },
+    { unidade: 'Santa Cecília', mes: 'Outubro/2026', entradas: 900, saidas: 650 }
   ]
 };
 
-const PERFIS = {
-  padre: { nome: "Pároco (Pe. Tiago)", icone: "⛪", menus: ["inicio", "painel", "solicitacoes", "secretaria", "comunidades", "agenda", "tarefas", "financeiro"] },
-  secretaria: { nome: "Secretaria", icone: "📋", menus: ["inicio", "secretaria", "solicitacoes", "comunidades", "agenda", "tarefas"] },
-  fiel: { nome: "Fiel", icone: "🙏", menus: ["inicio", "agenda", "solicitacoes", "comunidades"] }
-};
+const EM_BREVE = [
+  ['Catequese e sacramentos', 'Inscrições, turmas, catequistas, presenças e encontros com famílias.'],
+  ['PASCOM e comunicação', 'Pedidos de arte, aprovação de materiais e publicações.'],
+  ['Escalas litúrgicas', 'Escalas, convites, confirmações e substituições.'],
+  ['Documentos e reuniões', 'Atas, convocações, listas de presença e encaminhamentos.'],
+  ['Pastorais e movimentos', 'Coordenadores, membros, equipes e atividades.'],
+  ['Planejamento pastoral', 'Objetivos, ações, responsáveis, prazos e avaliação.'],
+  ['Patrimônio, obras e contratos', 'Bens, manutenções, obras, fornecedores e contratos.'],
+  ['Relatórios e indicadores', 'Relatórios por período, comunidade e situação.'],
+  ['Integração com Google Calendar', 'Depende de decisão sobre a privacidade dos compromissos.'],
+  ['Identidade e segurança avançadas', 'Autenticação real, backups e conformidade com a LGPD.']
+];
 
-const ROTULOS = {
-  inicio: "Início", painel: "Painel", solicitacoes: "Solicitações", secretaria: "Secretaria",
-  comunidades: "Comunidades", agenda: "Agenda", tarefas: "Tarefas", financeiro: "Financeiro"
-};
+/* ================= ESTADO ================= */
+const CHAVE = 'minha-paroquia-demo-v4';
+let dados;
+try { dados = JSON.parse(localStorage.getItem(CHAVE)) || JSON.parse(JSON.stringify(SEED)); }
+catch (e) { dados = JSON.parse(JSON.stringify(SEED)); }
+// tela: 'boas-vindas' | 'entrar' | 'cadastro' (antes de entrar)
+const estado = { tela: 'boas-vindas', pessoaId: null, visitante: false, aba: 'paroco', detalhe: null, editPessoa: null, aviso: '' };
 
-/* ===================== ARMAZENAMENTO LOCAL ===================== */
-const CHAVE = "minha_paroquia_demo_v1";
-let dados = carregar();
-let sessao = { perfil: null };
-let telaAtual = "inicio";
-
-function carregar() {
-  try {
-    const salvo = localStorage.getItem(CHAVE);
-    return salvo ? JSON.parse(salvo) : JSON.parse(JSON.stringify(DADOS_INICIAIS));
-  } catch (e) {
-    return JSON.parse(JSON.stringify(DADOS_INICIAIS));
-  }
-}
-function salvar() {
-  try { localStorage.setItem(CHAVE, JSON.stringify(dados)); } catch (e) {}
-}
-function novoId(lista) {
-  return lista.length ? Math.max(...lista.map(i => i.id)) + 1 : 1;
-}
-function formatarData(iso) {
-  const [a, m, d] = iso.split("-");
-  return `${d}/${m}/${a}`;
-}
-function formatarReais(v) {
-  return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
-}
+function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(dados)); } catch (e) {} }
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const proximoId = lista => lista.length ? Math.max(...lista.map(i => i.id)) + 1 : 1;
+const dataCurta = iso => { const [, m, d] = iso.split('-'); return `${d}/${m}`; };
+const reais = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+const ordenarEventos = () => dados.eventos.slice().sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+const pessoaPorId = id => dados.pessoas.find(p => p.id === id);
+const pessoaAtual = () => estado.visitante ? null : pessoaPorId(estado.pessoaId);
+const pode = acao => { const p = pessoaAtual(); return !!(p && p.perms[acao]); };
+const nomeFuncoes = p => p.funcoes.map(f => FUNCOES[f].nome.split(' (')[0]).join(', ') || 'Sem função';
+const ehPadre = p => !!p && p.funcoes.includes('padre');
 function classeStatus(s) {
-  return { pendente: "s-pendente", aprovada: "s-aprovada", devolvida: "s-devolvida", "não aprovada": "s-nao" }[s] || "s-pendente";
+  if (s === 'Pendente' || s === 'Encaminhada') return 'pend';
+  if (s === 'Aprovada') return 'ok';
+  return 'nao';
+}
+// Cadastros que a pessoa logada pode ver e editar
+function pessoasDoCadastro() {
+  if (pode('cadastrarFieis')) return dados.pessoas;
+  if (pode('cadastrarGrupo')) return dados.pessoas.filter(p => p.comunidade === pessoaAtual().comunidade);
+  return [];
+}
+function podeEditarCadastro(p) { return pessoasDoCadastro().some(x => x.id === p.id); }
+// Quem pode conceder ou alterar cada permissão
+function podeConcederPerm(k, alvo) {
+  if (!pode('administrar')) return false;
+  if (SO_PADRE.includes(k) && !ehPadre(pessoaAtual())) return false;
+  if (ehPadre(alvo) && !ehPadre(pessoaAtual())) return false;
+  return true;
+}
+function solicitacoesVisiveis() {
+  if (pode('verTodasSolicitacoes')) return dados.solicitacoes;
+  return dados.solicitacoes.filter(s => s.origem === estado.pessoaId);
+}
+function abasDisponiveis() {
+  if (estado.visitante) return ['comunidades', 'agenda'];
+  const abas = [];
+  if (pode('verPainel')) abas.push('paroco');
+  abas.push('solicitacoes');
+  if (pode('cadastrarFieis') || pode('cadastrarGrupo')) abas.push('cadastro');
+  if (pode('administrar')) abas.push('admin');
+  abas.push('comunidades', 'agenda');
+  if (pode('tarefas')) abas.push('tarefas');
+  if (pode('financeiro')) abas.push('financeiro');
+  abas.push('emBreve');
+  return abas;
 }
 
-/* ===================== RENDERIZAÇÃO ===================== */
-function render() {
-  const app = document.getElementById("app");
-  if (!sessao.perfil) {
-    app.innerHTML = telaLogin();
-    return;
-  }
-  const perfil = PERFIS[sessao.perfil];
-  if (!perfil.menus.includes(telaAtual)) telaAtual = "inicio";
-
-  const menu = perfil.menus.map(m =>
-    `<button class="${m === telaAtual ? 'ativo' : ''}" onclick="irPara('${m}')">${ROTULOS[m]}</button>`
-  ).join("");
-
-  const telas = {
-    inicio: telaInicio, painel: telaPainel, solicitacoes: telaSolicitacoes,
-    secretaria: telaSecretaria, comunidades: telaComunidades, agenda: telaAgenda,
-    tarefas: telaTarefas, financeiro: telaFinanceiro
-  };
-
-  app.innerHTML = `
-    <main>
-      <div class="aviso">Versão de demonstração. Os dados são fictícios e ficam salvos apenas neste navegador.
-        <br><button class="acao neutro" onclick="sair()">Trocar de perfil</button>
-        <button class="acao perigo" onclick="restaurarDemo()">Restaurar dados de exemplo</button>
-      </div>
-      <nav>${menu}</nav>
-      ${telas[telaAtual]()}
-    </main>`;
-}
-
-function telaLogin() {
+/* ================= TELAS ANTES DE ENTRAR ================= */
+function telaBoasVindas() {
+  const proximos = ordenarEventos().slice(0, 3);
   return `
-    <div class="login">
-      <h2 style="text-align:center">Entrar na demonstração</h2>
-      <p>Escolha um perfil para testar o aplicativo:</p>
-      ${Object.entries(PERFIS).map(([k, p]) =>
-        `<button class="acao" onclick="entrar('${k}')">${p.icone} ${p.nome}</button>`
-      ).join("")}
-      <p style="font-size:14px">Nesta demonstração não é necessária senha.</p>
+    <div class="inicio">
+      <img class="logo-centro" src="logo.png" alt="Logomarca da Paróquia São Sebastião" onerror="this.style.display='none'">
+      <h2 class="title" style="text-align:center">Bem-vindo à nossa Paróquia</h2>
+      <div class="muted" style="text-align:center">Uma comunidade de comunidades, uma só família.</div>
+      <button class="escolha" data-tela="entrar"><b>Entrar</b><small>Para quem já tem cadastro na paróquia.</small></button>
+      <button class="escolha" data-tela="cadastro"><b>Fazer meu cadastro</b><small>A Secretaria confere e libera o acesso.</small></button>
+      <button class="escolha" data-visitante><b>Continuar sem login</b><small>Ver comunidades e a agenda de celebrações.</small></button>
+      <section class="card banner" style="margin-top:18px"><h2>Permanecer · Unir · Frutificar</h2>
+        ${proximos.map(e => `<div class="item"><div style="display:flex;gap:11px;align-items:center"><span class="datebox">${dataCurta(e.data)}</span><div><b>${esc(e.nome)}</b><div class="muted">${esc(e.unidade)} · ${esc(e.hora)}</div></div></div></div>`).join('')}
+      </section>
     </div>`;
 }
 
-function telaInicio() {
-  const proximas = [...dados.agenda].sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora)).slice(0, 3);
+function telaEntrar() {
   return `
-    <h2>Bem-vindo(a) à Paróquia São Sebastião</h2>
-    <p>Que a paz do Senhor esteja com você.</p>
-    <h2>Próximas celebrações e compromissos</h2>
-    ${proximas.map(e => `
-      <div class="card"><h3>${e.evento}</h3>
-      <p>${formatarData(e.data)} às ${e.hora} · ${e.local}</p></div>`).join("")}
-    <h2>Comunicados</h2>
-    <div class="card"><h3>Festa de São Sebastião 2027</h3><p>Tema: Permanecer · Unir · Frutificar.</p></div>
-    <div class="card"><h3>Secretaria paroquial</h3><p>(48) 3256-0124</p></div>`;
+    <div class="caixa">
+      <h2 class="title" style="text-align:center">Entrar</h2>
+      <p class="muted" style="text-align:center">Escolha seu nome. Nesta demonstração não há senha. O que você vê depende das permissões do seu cadastro.</p>
+      <label for="login-pessoa">Pessoa cadastrada</label>
+      <select id="login-pessoa">
+        ${dados.pessoas.map(p => `<option value="${p.id}">${esc(p.nome)} · ${esc(nomeFuncoes(p))}</option>`).join('')}
+      </select>
+      <div class="actions"><button class="btn" data-entrar>Entrar</button><button class="btn outline" data-tela="boas-vindas">Voltar</button></div>
+    </div>`;
 }
 
-function telaPainel() {
-  const pendentes = dados.solicitacoes.filter(s => s.situacao === "pendente").length;
-  const tarefasAbertas = dados.tarefas.filter(t => t.situacao !== "Concluída").length;
+function telaCadastroProprio() {
   return `
-    <h2>Painel do Pároco</h2>
-    <div class="grid">
-      <div class="indicador"><b>${pendentes}</b>solicitações aguardando</div>
-      <div class="indicador"><b>${tarefasAbertas}</b>tarefas abertas</div>
-      <div class="indicador"><b>${dados.comunidades.length}</b>comunidades</div>
-      <div class="indicador"><b>${dados.pessoas.length}</b>pessoas cadastradas</div>
+    <div class="caixa">
+      <h2 class="title" style="text-align:center">Fazer meu cadastro</h2>
+      <p class="muted">Após o envio, a Secretaria ou o coordenador da sua comunidade confere o cadastro e libera o acesso.</p>
+      <label for="auto-nome">Nome completo</label>
+      <input type="text" id="auto-nome" placeholder="Seu nome">
+      <label for="auto-tel">Telefone</label>
+      <input type="text" id="auto-tel" placeholder="(48) 90000-0000">
+      <label for="auto-com">Comunidade</label>
+      <select id="auto-com">${NOMES_UNIDADES.map(n => `<option>${esc(n)}</option>`).join('')}</select>
+      <div class="actions"><button class="btn" data-enviar-cadastro-proprio>Enviar cadastro</button><button class="btn outline" data-tela="boas-vindas">Voltar</button></div>
+    </div>`;
+}
+
+/* ================= TELAS DEPOIS DE ENTRAR ================= */
+function telaPainel() {
+  const aguardando = dados.solicitacoes.filter(s => s.status === 'Pendente' || s.status === 'Encaminhada');
+  const abertas = dados.tarefas.filter(t => !t.feita).length;
+  return `
+    <h2 class="title">Painel do Pároco</h2>
+    <div class="muted">Visão institucional e fila de decisões</div>
+    <div class="grid3" style="margin-top:12px">
+      <div class="stat"><span class="muted">Aguardando decisão</span><strong>${aguardando.length}</strong></div>
+      <div class="stat"><span class="muted">Tarefas abertas</span><strong>${abertas}</strong></div>
+      <div class="stat"><span class="muted">Cadastros a confirmar</span><strong>${dados.pessoas.filter(p => p.situacao !== 'ativo').length}</strong></div>
     </div>
-    <h2>Próximos compromissos</h2>
-    ${dados.agenda.map(e => `<div class="card"><p><b>${formatarData(e.data)} ${e.hora}</b> · ${e.evento}</p></div>`).join("")}`;
+    <section class="card"><h3>Solicitações aguardando</h3>
+      ${aguardando.map(s => `
+        <div class="item"><div><b>${esc(s.titulo)}</b><div class="muted">${esc(s.unidade)}</div>
+        <span class="tag ${classeStatus(s.status)}">${esc(s.status)}</span></div>
+        <button class="btn" data-abrir="${s.id}">Analisar</button></div>`).join('') || '<p class="muted">Nenhuma solicitação aguardando.</p>'}
+    </section>`;
 }
 
 function telaSolicitacoes() {
-  const ehPadre = sessao.perfil === "padre";
-  const ehFiel = sessao.perfil === "fiel";
+  if (estado.detalhe !== null) return telaDetalhe();
+  const lista = solicitacoesVisiveis();
+  const formNova = pode('criarSolicitacao') ? `
+    <section class="card"><h3>Nova solicitação</h3>
+      <label for="sol-tipo">Tipo</label>
+      <select id="sol-tipo">
+        <option>Documento sacramental</option><option>Reserva de espaço</option>
+        <option>Agendamento de bênção ou visita</option><option>Comunicação PASCOM</option><option>Outro</option>
+      </select>
+      <label for="sol-titulo">Assunto</label>
+      <input type="text" id="sol-titulo" placeholder="Ex.: Reserva para reunião">
+      <label for="sol-unidade">Comunidade</label>
+      <select id="sol-unidade">${NOMES_UNIDADES.map(n => `<option>${esc(n)}</option>`).join('')}</select>
+      <label for="sol-detalhe">Detalhes</label>
+      <textarea id="sol-detalhe" rows="3" placeholder="Descreva o pedido"></textarea>
+      <div class="actions"><button class="btn" data-nova-solicitacao>Enviar solicitação</button></div>
+    </section>` : '';
   return `
-    <h2>Solicitações</h2>
-    ${ehFiel ? `<div class="card"><h3>Nova solicitação</h3>
-      <label>Tipo<select id="novoTipo">
-        <option>Certidão de batismo</option><option>Reserva do salão paroquial</option>
-        <option>Agendamento de bênção de casa</option><option>Outro</option></select></label>
-      <button class="acao" onclick="novaSolicitacao()">Enviar solicitação</button></div>` : ""}
-    ${dados.solicitacoes.map(s => `
-      <div class="card">
-        <h3>${s.tipo}</h3>
-        <p>Solicitante: ${s.solicitante}</p>
-        <p><span class="status ${classeStatus(s.situacao)}">${s.situacao}</span></p>
-        ${s.orientacao ? `<p><i>Orientação: ${s.orientacao}</i></p>` : ""}
-        ${ehPadre && s.situacao === "pendente" ? `
-          <textarea id="orient-${s.id}" placeholder="Orientação (opcional)"></textarea>
-          <button class="acao" onclick="decidir(${s.id}, 'aprovada')">Aprovar</button>
-          <button class="acao neutro" onclick="decidir(${s.id}, 'devolvida')">Devolver</button>
-          <button class="acao perigo" onclick="decidir(${s.id}, 'não aprovada')">Não aprovar</button>` : ""}
-      </div>`).join("")}`;
+    <h2 class="title">Solicitações</h2>
+    <div class="muted">${pode('verTodasSolicitacoes') ? 'Pedidos de todas as comunidades e pessoas.' : 'Seus pedidos e o status de cada um.'}</div>
+    ${formNova}
+    <section class="card">
+      ${lista.map(s => {
+        const autor = pessoaPorId(s.origem);
+        return `<div class="item"><div><b>${esc(s.titulo)}</b>
+          <div class="muted">${esc(s.unidade)} · ${esc(s.tipo)}${autor ? ' · ' + esc(autor.nome) : ''}</div>
+          <span class="tag ${classeStatus(s.status)}">${esc(s.status)}</span></div>
+          <button class="btn outline" data-abrir="${s.id}">Abrir</button></div>`;
+      }).join('') || '<p class="muted">Nenhuma solicitação.</p>'}
+    </section>`;
 }
 
-function telaSecretaria() {
+function telaDetalhe() {
+  const s = dados.solicitacoes.find(x => x.id === estado.detalhe);
+  if (!s) { estado.detalhe = null; return telaSolicitacoes(); }
+  let acoes = '';
+  if (pode('encaminhar') && s.status === 'Pendente')
+    acoes += `<button class="btn blue" data-encaminhar="${s.id}">Encaminhar ao pároco</button>`;
+  if (pode('decidir') && (s.status === 'Pendente' || s.status === 'Encaminhada')) {
+    acoes += `
+      <label for="obs">Justificativa ou orientação</label>
+      <textarea id="obs" rows="3" placeholder="Observação da decisão"></textarea>
+      <div class="actions">
+        <button class="btn" data-decidir="Aprovada">Aprovar</button>
+        <button class="btn outline" data-decidir="Devolvida para correção">Devolver</button>
+        <button class="btn wine" data-decidir="Não aprovada">Não aprovar</button>
+      </div>
+      <p class="muted">Decisão ilustrativa; não verifica requisitos documentais reais.</p>`;
+  }
+  const autor = pessoaPorId(s.origem);
   return `
-    <h2>Cadastro de pessoas</h2>
-    <div class="card">
-      <label>Nome completo<input id="cNome" placeholder="Ex.: Pedro Exemplo"></label>
-      <label>Telefone<input id="cTel" placeholder="(48) 90000-0000"></label>
-      <label>Comunidade<select id="cCom">${dados.comunidades.map(c => `<option>${c.nome}</option>`).join("")}</select></label>
-      <label>Função<input id="cFun" placeholder="Ex.: Catequista"></label>
-      <button class="acao" onclick="cadastrarPessoa()">Cadastrar pessoa fictícia</button>
-    </div>
-    <h2>Pessoas cadastradas</h2>
-    <table>
-      <tr><th>Nome</th><th>Telefone</th><th>Comunidade</th><th>Função</th></tr>
-      ${dados.pessoas.map(p => `<tr><td>${p.nome}</td><td>${p.telefone}</td><td>${p.comunidade}</td><td>${p.funcao}</td></tr>`).join("")}
-    </table>`;
+    <button class="btn outline" data-voltar>← Voltar</button>
+    <h2 class="title" style="margin-top:12px">Análise de solicitação</h2>
+    <section class="card">
+      <div class="muted">Solicitação nº ${s.id}${autor ? ' · de ' + esc(autor.nome) : ''}</div>
+      <h3 style="font-size:19px;margin-top:6px">${esc(s.titulo)}</h3>
+      <span class="tag ${classeStatus(s.status)}">${esc(s.status)}</span>
+      <p><b>Comunidade:</b> ${esc(s.unidade)}</p>
+      <p><b>Tipo:</b> ${esc(s.tipo)}</p>
+      <p>${esc(s.detalhe)}</p>
+      ${s.obs ? `<p><b>Observação:</b> ${esc(s.obs)}</p>` : ''}
+    </section>
+    ${acoes ? `<section class="card">${acoes}</section>` : ''}`;
+}
+
+function formCadastro() {
+  const novo = estado.editPessoa === 'novo';
+  const p = novo ? { nome: '', telefone: '', comunidade: pessoaAtual().comunidade } : pessoaPorId(estado.editPessoa);
+  const travaComunidade = !pode('cadastrarFieis');
+  return `
+    <section class="card">
+      <h3>${novo ? 'Novo cadastro de fiel (fictício)' : 'Editar cadastro'}</h3>
+      <label for="p-nome">Nome</label>
+      <input type="text" id="p-nome" value="${esc(p.nome)}" placeholder="Ex.: Pessoa de Teste">
+      <div class="row2">
+        <div><label for="p-tel">Telefone</label><input type="text" id="p-tel" value="${esc(p.telefone || '')}" placeholder="(48) 90000-0000"></div>
+        <div><label for="p-com">Comunidade ou grupo</label>
+          <select id="p-com" ${travaComunidade ? 'disabled' : ''}>
+            ${NOMES_UNIDADES.map(n => `<option ${n === p.comunidade ? 'selected' : ''}>${esc(n)}</option>`).join('')}
+          </select>
+          ${travaComunidade ? '<div class="muted">Você cadastra apenas na sua comunidade.</div>' : ''}
+        </div>
+      </div>
+      <p class="muted">${novo && travaComunidade ? 'O cadastro fica "aguardando conferência" até a Secretaria confirmar.' : 'Permissões são definidas na área Administradores.'}</p>
+      <div class="actions">
+        <button class="btn" data-salvar-cadastro>Salvar</button>
+        <button class="btn outline" data-cancelar-cadastro>Cancelar</button>
+      </div>
+    </section>`;
+}
+
+function telaCadastro() {
+  const lista = pessoasDoCadastro();
+  const escopo = pode('cadastrarFieis') ? 'Todas as comunidades' : `Somente ${esc(pessoaAtual().comunidade)}`;
+  return `
+    <h2 class="title">Cadastro de fiéis</h2>
+    <div class="muted">${escopo}. Cadastros novos de coordenadores ficam aguardando conferência da Secretaria.</div>
+    ${estado.editPessoa !== null ? formCadastro() : `<div class="actions"><button class="btn" data-novo-cadastro>+ Cadastrar fiel</button></div>`}
+    <section class="card"><h3>Cadastros (${lista.length})</h3>
+      ${lista.map(p => `
+        <div class="item"><div><b>${esc(p.nome)}</b>
+          <div class="muted">${esc(p.comunidade)} · ${esc(p.telefone || '-')}</div>
+          <span class="tag ${p.situacao === 'ativo' ? 'ok' : 'pend'}">${esc(p.situacao)}</span>
+          <span class="tag">${esc(nomeFuncoes(p))}</span></div>
+        <button class="btn small outline" data-editar-cadastro="${p.id}">Editar</button></div>`).join('') || '<p class="muted">Nenhum cadastro para mostrar.</p>'}
+    </section>`;
+}
+
+function telaAdmin() {
+  return `
+    <h2 class="title">Administradores</h2>
+    <div class="muted">Aqui a Secretaria e o pároco confirmam cadastros e dão permissões. Permissões marcadas em cinza só o pároco pode alterar.</div>
+    <section class="card"><h3>Pessoas (${dados.pessoas.length})</h3>
+      ${dados.pessoas.map(p => {
+        const pode_ = !ehPadre(p) || ehPadre(pessoaAtual());
+        return `
+        <details>
+          <summary>${esc(p.nome)} <span class="muted" style="font-weight:400">· ${esc(p.comunidade)}</span></summary>
+          <div class="muted" style="margin-top:6px">Situação: <b>${esc(p.situacao)}</b></div>
+          ${p.situacao !== 'ativo' && pode('cadastrarFieis') ? `<div class="actions"><button class="btn small" data-confirmar="${p.id}">Confirmar cadastro</button></div>` : ''}
+          <div class="bloco">
+            <b>Funções</b>
+            <div class="muted">Marque e aplique para sugerir as permissões abaixo.</div>
+            ${Object.entries(FUNCOES).map(([k, f]) => `
+              <label class="check"><input type="checkbox" id="a${p.id}-f-${k}" ${p.funcoes.includes(k) ? 'checked' : ''} ${pode_ ? '' : 'disabled'}> ${esc(f.nome)}</label>`).join('')}
+            <div class="actions"><button class="btn small outline" data-aplicar-admin="${p.id}" ${pode_ ? '' : 'disabled'}>Aplicar funções às permissões</button></div>
+          </div>
+          <div class="bloco">
+            <b>Permissões</b>
+            ${PERMISSOES.map(([k, rot]) => {
+              const liberado = podeConcederPerm(k, p);
+              return `<label class="check ${liberado ? '' : 'off'}"><input type="checkbox" id="a${p.id}-p-${k}" ${p.perms[k] ? 'checked' : ''} ${liberado ? '' : 'disabled'}> ${esc(rot)}${liberado ? '' : ' (somente pároco)'}</label>`;
+            }).join('')}
+          </div>
+          <div class="actions"><button class="btn" data-salvar-admin="${p.id}" ${pode_ ? '' : 'disabled'}>Salvar permissões</button></div>
+        </details>`;
+      }).join('')}
+    </section>`;
 }
 
 function telaComunidades() {
   return `
-    <h2>Comunidades</h2>
-    ${dados.comunidades.map(c => `
-      <div class="card"><h3>${c.nome}</h3>
-      <p>Padroeiro: ${c.padroeiro}</p><p>Local: ${c.local}</p><p>Coordenação: ${c.coordenacao}</p></div>`).join("")}`;
+    <h2 class="title">Comunidades</h2>
+    <div class="muted">${UNIDADES.length} comunidades e capelas da Paróquia</div>
+    <div class="grid" style="margin-top:12px">
+      ${UNIDADES.map(u => `
+        <div class="card" style="margin:0">
+          <div style="color:var(--green);font-size:22px">✝</div>
+          <b>${esc(u.nome)}</b>
+          <div class="muted">${esc(u.bairro)}</div>
+        </div>`).join('')}
+    </div>`;
 }
 
 function telaAgenda() {
-  const lista = [...dados.agenda].sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
   return `
-    <h2>Agenda paroquial</h2>
-    ${lista.map(e => `<div class="card"><h3>${e.evento}</h3><p>${formatarData(e.data)} às ${e.hora}</p><p>${e.local}</p></div>`).join("")}
-    ${sessao.perfil !== "fiel" ? `
-    <div class="card"><h3>Incluir compromisso</h3>
-      <label>Evento<input id="aEvento" placeholder="Ex.: Reunião da PASCOM"></label>
-      <label>Data<input type="date" id="aData"></label>
-      <label>Hora<input type="time" id="aHora"></label>
-      <label>Local<input id="aLocal" placeholder="Ex.: Salão paroquial"></label>
-      <button class="acao" onclick="incluirAgenda()">Incluir na agenda</button></div>` : ""}`;
+    <h2 class="title">Agenda Paroquial</h2>
+    <div class="muted">Celebrações e atividades fictícias</div>
+    <section class="card">
+      ${ordenarEventos().map(e => `
+        <div class="item"><div style="display:flex;gap:11px;align-items:center"><span class="datebox">${dataCurta(e.data)}</span>
+        <div><b>${esc(e.nome)}</b><div class="muted">${esc(e.unidade)} · ${esc(e.hora)}</div></div></div></div>`).join('')}
+    </section>
+    ${pode('agendar') ? `
+    <section class="card"><h3>Nova atividade de teste</h3>
+      <label for="ev-nome">Descrição</label>
+      <input type="text" id="ev-nome" placeholder="Ex.: Reunião comunitária">
+      <div class="row2">
+        <div><label for="ev-data">Data</label><input type="date" id="ev-data"></div>
+        <div><label for="ev-hora">Horário</label><input type="time" id="ev-hora"></div>
+      </div>
+      <label for="ev-unidade">Comunidade</label>
+      <select id="ev-unidade">${NOMES_UNIDADES.map(n => `<option>${esc(n)}</option>`).join('')}</select>
+      <div class="actions"><button class="btn" data-add-evento>Adicionar à agenda</button></div>
+    </section>` : ''}`;
 }
 
 function telaTarefas() {
   return `
-    <h2>Tarefas</h2>
-    ${dados.tarefas.map(t => `
-      <div class="card"><h3>${t.titulo}</h3>
-      <p>Responsável: ${t.responsavel} · Prazo: ${formatarData(t.prazo)} · Prioridade: ${t.prioridade}</p>
-      <p>Situação: <b>${t.situacao}</b></p>
-      ${t.situacao !== "Concluída" ? `<button class="acao" onclick="concluirTarefa(${t.id})">Marcar como concluída</button>` : ""}
-      </div>`).join("")}`;
+    <h2 class="title">Tarefas</h2>
+    <div class="muted">Acompanhamento demonstrativo</div>
+    <section class="card">
+      ${dados.tarefas.map((t, i) => `
+        <div class="item"><div><b style="${t.feita ? 'text-decoration:line-through;opacity:.55' : ''}">${esc(t.nome)}</b><div class="muted">${esc(t.unidade)}</div></div>
+        <button class="btn outline" data-tarefa="${i}">${t.feita ? 'Reabrir' : 'Concluir'}</button></div>`).join('')}
+    </section>
+    <section class="card"><h3>Nova tarefa</h3>
+      <label for="tarefa-nome">Descrição</label>
+      <input type="text" id="tarefa-nome" placeholder="O que precisa ser feito?">
+      <label for="tarefa-unidade">Unidade</label>
+      <select id="tarefa-unidade"><option>Paróquia</option><option>Secretaria</option>${NOMES_UNIDADES.map(n => `<option>${esc(n)}</option>`).join('')}</select>
+      <div class="actions"><button class="btn" data-add-tarefa>Criar tarefa</button></div>
+    </section>`;
 }
 
 function telaFinanceiro() {
   return `
-    <h2>Visão financeira ilustrativa</h2>
-    <p>Valores fictícios apenas para demonstração.</p>
-    <table>
-      <tr><th>Mês</th><th>Unidade</th><th>Entradas</th><th>Saídas</th><th>Saldo</th></tr>
-      ${dados.financeiro.map(f => `
-        <tr><td>${f.mes}</td><td>${f.unidade}</td><td>${formatarReais(f.entradas)}</td>
-        <td>${formatarReais(f.saidas)}</td><td>${formatarReais(f.entradas - f.saidas)}</td></tr>`).join("")}
-    </table>`;
+    <h2 class="title">Visão Financeira</h2>
+    <div class="muted">Exemplo ilustrativo · valores fictícios</div>
+    <section class="card"><h3>Caixas institucionais independentes</h3>
+      <p class="muted">A Paróquia (administração central), a Matriz e cada comunidade têm registros próprios. Transferências internas não podem ser contadas duas vezes no consolidado.</p></section>
+    ${dados.financeiro.map(f => `
+      <section class="card"><b>${esc(f.unidade)}</b><div class="muted">${esc(f.mes)}</div>
+        <div class="grid3" style="margin-top:10px">
+          <div class="stat"><span class="muted">Entradas</span><strong style="font-size:19px">${reais(f.entradas)}</strong></div>
+          <div class="stat"><span class="muted">Saídas</span><strong style="font-size:19px">${reais(f.saidas)}</strong></div>
+          <div class="stat"><span class="muted">Saldo</span><strong style="font-size:19px">${reais(f.entradas - f.saidas)}</strong></div>
+        </div></section>`).join('')}`;
 }
 
-/* ===================== AÇÕES ===================== */
-function entrar(perfil) {
-  sessao.perfil = perfil;
-  telaAtual = "inicio";
-  render();
+function telaEmBreve() {
+  return `
+    <h2 class="title">Módulos do projeto</h2>
+    <div class="muted">Funções previstas no relatório. Ainda não implementadas nesta demonstração.</div>
+    <section class="card">
+      ${EM_BREVE.map(([nome, desc]) => `
+        <div class="item soon"><div><b>${esc(nome)}</b><div class="muted">${esc(desc)}</div></div><span class="pill">Em breve</span></div>`).join('')}
+    </section>`;
 }
-function sair() {
-  sessao.perfil = null;
-  render();
-}
-function irPara(tela) {
-  telaAtual = tela;
-  render();
+
+const TELAS = {
+  paroco: telaPainel, solicitacoes: telaSolicitacoes, cadastro: telaCadastro, admin: telaAdmin,
+  comunidades: telaComunidades, agenda: telaAgenda, tarefas: telaTarefas, financeiro: telaFinanceiro, emBreve: telaEmBreve
+};
+
+/* ================= RENDERIZAÇÃO ================= */
+function render() {
+  const app = document.getElementById('app');
+  const tabs = document.getElementById('tabs');
+  const topo = document.getElementById('topo');
+  const logado = !!pessoaAtual();
+
+  // Antes de entrar: primeira página com as três opções
+  if (!logado && !estado.visitante) {
+    topo.innerHTML = '';
+    tabs.innerHTML = '';
+    const telas = { 'boas-vindas': telaBoasVindas, entrar: telaEntrar, cadastro: telaCadastroProprio };
+    app.innerHTML = (estado.aviso ? `<div class="toast" role="status">${esc(estado.aviso)}</div>` : '') + telas[estado.tela]();
+    estado.aviso = '';
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  const abas = abasDisponiveis();
+  if (!abas.includes(estado.aba)) estado.aba = abas[0];
+
+  const p = pessoaAtual();
+  const quem = p ? `<b>${esc(p.nome)}</b> · ${esc(nomeFuncoes(p))}` : '<b>Visitante</b>';
+  topo.innerHTML = `<div class="topbar"><span>Entrou como ${quem}</span>
+    <button class="btn outline small" data-sair>Sair</button>
+    <button class="btn outline small" data-reset>Dados de exemplo</button></div>`;
+
+  tabs.innerHTML = abas.map(a =>
+    `<button data-aba="${a}" class="${a === estado.aba ? 'active' : ''}" aria-current="${a === estado.aba ? 'page' : 'false'}">${ROTULOS[a]}</button>`
+  ).join('');
+
+  const aviso = estado.aviso ? `<div class="toast" role="status">${esc(estado.aviso)}</div>` : '';
+  estado.aviso = '';
+  const corpo = estado.aba === 'solicitacoes' ? telaSolicitacoes() : TELAS[estado.aba]();
+  app.innerHTML = aviso + corpo;
   window.scrollTo(0, 0);
 }
-function decidir(id, novaSituacao) {
-  const s = dados.solicitacoes.find(x => x.id === id);
-  const campo = document.getElementById("orient-" + id);
-  s.situacao = novaSituacao;
-  s.orientacao = campo ? campo.value.trim() : "";
-  salvar();
-  render();
-}
-function novaSolicitacao() {
-  const tipo = document.getElementById("novoTipo").value;
-  dados.solicitacoes.push({ id: novoId(dados.solicitacoes), tipo, solicitante: "Visitante demonstração", situacao: "pendente", orientacao: "" });
-  salvar();
-  render();
-}
-function cadastrarPessoa() {
-  const nome = document.getElementById("cNome").value.trim();
-  if (!nome) { alert("Informe o nome."); return; }
-  dados.pessoas.push({
-    id: novoId(dados.pessoas),
-    nome,
-    telefone: document.getElementById("cTel").value.trim() || "-",
-    comunidade: document.getElementById("cCom").value,
-    funcao: document.getElementById("cFun").value.trim() || "Fiel"
-  });
-  salvar();
-  render();
-}
-function incluirAgenda() {
-  const evento = document.getElementById("aEvento").value.trim();
-  const data = document.getElementById("aData").value;
-  const hora = document.getElementById("aHora").value;
-  if (!evento || !data || !hora) { alert("Preencha evento, data e hora."); return; }
-  dados.agenda.push({ id: novoId(dados.agenda), evento, data, hora, local: document.getElementById("aLocal").value.trim() || "-" });
-  salvar();
-  render();
-}
-function concluirTarefa(id) {
-  dados.tarefas.find(t => t.id === id).situacao = "Concluída";
-  salvar();
-  render();
-}
-function restaurarDemo() {
-  if (!confirm("Apagar os dados alterados e voltar aos exemplos?")) return;
-  dados = JSON.parse(JSON.stringify(DADOS_INICIAIS));
-  salvar();
-  render();
-}
+
+/* ================= AÇÕES ================= */
+function valor(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function marcado(id) { const el = document.getElementById(id); return !!(el && el.checked); }
+function sairDaSessao() { estado.pessoaId = null; estado.visitante = false; estado.detalhe = null; estado.editPessoa = null; estado.tela = 'boas-vindas'; }
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const d = b.dataset;
+
+  if (d.tela) { estado.tela = d.tela; render(); return; }
+  if ('visitante' in d) { sairDaSessao(); estado.visitante = true; estado.aba = 'comunidades'; render(); return; }
+  if ('entrar' in d) {
+    const id = Number(document.getElementById('login-pessoa').value);
+    estado.pessoaId = id; estado.visitante = false; estado.detalhe = null; estado.editPessoa = null;
+    estado.aba = 'paroco'; render(); return;
+  }
+  if ('sair' in d) { sairDaSessao(); render(); return; }
+  if ('enviarCadastroProprio' in d) {
+    const nome = valor('auto-nome');
+    if (!nome) { alert('Informe seu nome.'); return; }
+    dados.pessoas.push({
+      id: proximoId(dados.pessoas), nome, telefone: valor('auto-tel') || '-',
+      comunidade: valor('auto-com'), funcoes: ['fiel'], perms: permsDe(['fiel']), situacao: 'aguardando conferência'
+    });
+    salvar();
+    estado.tela = 'entrar';
+    estado.aviso = 'Cadastro enviado. A Secretaria ou o coordenador da sua comunidade vai conferir.';
+    render(); return;
+  }
+
+  if (d.aba) { estado.aba = d.aba; estado.detalhe = null; estado.editPessoa = null; render(); return; }
+  if (d.abrir) { estado.detalhe = Number(d.abrir); estado.aba = 'solicitacoes'; render(); return; }
+  if ('voltar' in d) { estado.detalhe = null; render(); return; }
+
+  if (d.encaminhar) {
+    const s = dados.solicitacoes.find(x => x.id === Number(d.encaminhar));
+    s.status = 'Encaminhada';
+    s.obs = 'Encaminhado pela Secretaria para decisão do pároco.';
+    salvar(); estado.aviso = 'Solicitação encaminhada ao pároco.'; render(); return;
+  }
+  if (d.decidir) {
+    const s = dados.solicitacoes.find(x => x.id === estado.detalhe);
+    s.status = d.decidir;
+    s.obs = valor('obs');
+    salvar(); estado.detalhe = null; estado.aviso = 'Decisão de demonstração registrada: ' + d.decidir; render(); return;
+  }
+  if ('novaSolicitacao' in d) {
+    const titulo = valor('sol-titulo');
+    if (!titulo) { alert('Informe o assunto.'); return; }
+    dados.solicitacoes.push({
+      id: proximoId(dados.solicitacoes), titulo, unidade: valor('sol-unidade'),
+      tipo: valor('sol-tipo'), detalhe: valor('sol-detalhe') || '-',
+      status: 'Pendente', origem: estado.pessoaId, obs: ''
+    });
+    salvar(); estado.aviso = 'Solicitação enviada. Acompanhe o status aqui.'; render(); return;
+  }
+
+  // Cadastro de fiéis
+  if ('novoCadastro' in d) { estado.editPessoa = 'novo'; render(); return; }
+  if (d.editarCadastro) { estado.editPessoa = Number(d.editarCadastro); render(); return; }
+  if ('cancelarCadastro' in d) { estado.editPessoa = null; render(); return; }
+  if ('salvarCadastro' in d) {
+    const nome = valor('p-nome');
+    if (!nome) { alert('Informe o nome (fictício).'); return; }
+    const novo = estado.editPessoa === 'novo';
+    const comunidade = pode('cadastrarFieis') ? valor('p-com') : pessoaAtual().comunidade;
+    if (novo) {
+      const pendente = !pode('cadastrarFieis');
+      dados.pessoas.push({
+        id: proximoId(dados.pessoas), nome, telefone: valor('p-tel') || '-', comunidade,
+        funcoes: ['fiel'], perms: permsDe(['fiel']),
+        situacao: pendente ? 'aguardando conferência' : 'ativo'
+      });
+      estado.aviso = pendente ? 'Cadastro criado e aguardando conferência da Secretaria.' : 'Fiel cadastrado.';
+    } else {
+      const p = pessoaPorId(estado.editPessoa);
+      Object.assign(p, { nome, telefone: valor('p-tel') || '-', comunidade });
+      estado.aviso = 'Cadastro atualizado.';
+    }
+    estado.editPessoa = null; salvar(); render(); return;
+  }
+  if (d.confirmar) {
+    const p = pessoaPorId(Number(d.confirmar));
+    p.situacao = 'ativo'; salvar(); estado.aviso = p.nome + ': cadastro confirmado.'; render(); return;
+  }
+
+  // Administradores
+  if (d.aplicarAdmin) {
+    const id = Number(d.aplicarAdmin);
+    const funcoes = Object.keys(FUNCOES).filter(k => marcado(`a${id}-f-${k}`));
+    const perms = permsDe(funcoes);
+    PERMISSOES.forEach(([k]) => { const el = document.getElementById(`a${id}-p-${k}`); if (el && !el.disabled) el.checked = perms[k]; });
+    return;
+  }
+  if (d.salvarAdmin) {
+    const id = Number(d.salvarAdmin);
+    const p = pessoaPorId(id);
+    const novasFuncoes = Object.keys(FUNCOES).filter(k => marcado(`a${id}-f-${k}`));
+    // Só o pároco pode atribuir ou remover as funções de Pároco e Secretaria
+    if (!ehPadre(pessoaAtual())) {
+      const mudouSensivel = ['padre', 'secretaria'].some(f => novasFuncoes.includes(f) !== p.funcoes.includes(f));
+      if (mudouSensivel) { alert('Somente o pároco pode alterar as funções de Pároco e Secretaria.'); return; }
+    }
+    p.funcoes = novasFuncoes;
+    PERMISSOES.forEach(([k]) => {
+      const el = document.getElementById(`a${id}-p-${k}`);
+      if (el && !el.disabled) p.perms[k] = el.checked;
+    });
+    salvar(); estado.aviso = 'Permissões de ' + p.nome + ' salvas. Valem no próximo acesso.'; render(); return;
+  }
+
+  if ('addEvento' in d) {
+    const nome = valor('ev-nome'), data = valor('ev-data'), hora = valor('ev-hora');
+    if (!nome || !data || !hora) { alert('Preencha descrição, data e horário.'); return; }
+    dados.eventos.push({ nome, data, hora, unidade: valor('ev-unidade') });
+    salvar(); estado.aviso = 'Atividade fictícia adicionada à agenda.'; render(); return;
+  }
+  if ('addTarefa' in d) {
+    const nome = valor('tarefa-nome');
+    if (!nome) { alert('Informe a descrição.'); return; }
+    dados.tarefas.push({ nome, unidade: valor('tarefa-unidade'), feita: false });
+    salvar(); estado.aviso = 'Tarefa fictícia criada.'; render(); return;
+  }
+  if (d.tarefa !== undefined) {
+    const t = dados.tarefas[Number(d.tarefa)];
+    t.feita = !t.feita; salvar(); render(); return;
+  }
+  if ('reset' in d) {
+    if (confirm('Restaurar os dados fictícios da demonstração?')) {
+      dados = JSON.parse(JSON.stringify(SEED)); salvar();
+      estado.aviso = 'Dados de exemplo restaurados.'; render();
+    }
+  }
+});
 
 render();
+})();
 </script>
 </body>
 </html>
