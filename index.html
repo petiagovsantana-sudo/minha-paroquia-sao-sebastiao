@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#792A25">
+<title>Minha Paróquia São Sebastião - Demonstração</title>
+<link href="https://fonts.googleapis.com/css2?family=Petrona:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bordo: #792A25; --dourado: #C09D4D; --creme: #FFF7EB;
+    --verde: #196F4E; --azul: #174870; --texto: #2b2b2b; --branco: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Petrona', Georgia, serif; font-size: 18px; color: var(--texto); background: var(--creme); }
+  header { background: var(--bordo); color: var(--creme); padding: 16px; text-align: center; }
+  header h1 { margin: 0; font-size: 22px; }
+  header small { opacity: .85; }
+  nav { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: var(--branco); border-bottom: 2px solid var(--dourado); position: sticky; top: 0; z-index: 5; }
+  nav button { flex: 1 1 auto; padding: 10px; font-size: 16px; border: 1px solid var(--dourado); background: var(--creme); color: var(--bordo); border-radius: 6px; cursor: pointer; }
+  nav button.ativo { background: var(--bordo); color: var(--creme); }
+  main { padding: 16px; max-width: 900px; margin: 0 auto; }
+  .aviso { background: #fff3cd; border: 1px solid var(--dourado); padding: 10px; border-radius: 6px; font-size: 15px; margin-bottom: 14px; }
+  .card { background: var(--branco); border-left: 5px solid var(--dourado); padding: 14px; border-radius: 6px; margin-bottom: 12px; }
+  .card h3 { margin: 0 0 6px; color: var(--bordo); font-size: 19px; }
+  .card p { margin: 4px 0; }
+  .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 14px; color: #fff; }
+  .s-pendente { background: var(--dourado); }
+  .s-aprovada { background: var(--verde); }
+  .s-devolvida { background: var(--azul); }
+  .s-nao { background: var(--bordo); }
+  button.acao, input[type=submit] { padding: 10px 14px; font-size: 16px; border: none; border-radius: 6px; background: var(--verde); color: #fff; cursor: pointer; margin: 4px 4px 4px 0; }
+  button.perigo { background: var(--bordo); }
+  button.neutro { background: var(--azul); }
+  input, select, textarea { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #bbb; border-radius: 6px; margin: 4px 0 10px; font-family: inherit; }
+  label { font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; background: var(--branco); font-size: 16px; }
+  th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: left; }
+  th { background: var(--creme); color: var(--bordo); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .indicador { background: var(--branco); padding: 14px; border-radius: 6px; text-align: center; border-top: 4px solid var(--verde); }
+  .indicador b { font-size: 28px; color: var(--bordo); display: block; }
+  .login { max-width: 420px; margin: 30px auto; background: var(--branco); padding: 20px; border-radius: 8px; border-top: 5px solid var(--dourado); }
+  .login button { width: 100%; margin-bottom: 8px; }
+  h2 { color: var(--bordo); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Minha Paróquia São Sebastião</h1>
+  <small>Anitápolis – SC · Arquidiocese de Florianópolis</small>
+</header>
+
+<div id="app"></div>
+
+<script>
+/* ===================== DADOS INICIAIS (FICTÍCIOS) ===================== */
+const DADOS_INICIAIS = {
+  pessoas: [
+    { id: 1, nome: "Maria Exemplo", telefone: "(48) 90000-0001", comunidade: "Matriz", funcao: "Catequista" },
+    { id: 2, nome: "José Exemplo", telefone: "(48) 90000-0002", comunidade: "Santa Cecília", funcao: "Coordenador de pastoral" },
+    { id: 3, nome: "Ana Exemplo", telefone: "(48) 90000-0003", comunidade: "Matriz", funcao: "Fiel" }
+  ],
+  comunidades: [
+    { id: 1, nome: "Matriz São Sebastião", padroeiro: "São Sebastião", local: "Centro de Anitápolis", coordenacao: "Conselho da Matriz" },
+    { id: 2, nome: "Capela Santa Cecília", padroeiro: "Santa Cecília", local: "Povoamento Escola", coordenacao: "Conselho de Santa Cecília" }
+  ],
+  solicitacoes: [
+    { id: 1, tipo: "Certidão de batismo", solicitante: "Maria Exemplo", situacao: "pendente", orientacao: "" },
+    { id: 2, tipo: "Reserva do salão paroquial", solicitante: "José Exemplo", situacao: "pendente", orientacao: "" },
+    { id: 3, tipo: "Agendamento de bênção de casa", solicitante: "Ana Exemplo", situacao: "aprovada", orientacao: "Visita marcada para sábado." }
+  ],
+  agenda: [
+    { id: 1, data: "2026-11-01", hora: "19:00", evento: "Missa de Finados - Matriz", local: "Igreja Matriz" },
+    { id: 2, data: "2026-11-07", hora: "08:00", evento: "Reunião do Conselho de Pastoral", local: "Salão paroquial" },
+    { id: 3, data: "2026-11-14", hora: "14:00", evento: "Encontro da catequese", local: "Capela Santa Cecília" }
+  ],
+  tarefas: [
+    { id: 1, titulo: "Revisar relatório de fiéis", responsavel: "Secretaria", prazo: "2026-11-05", prioridade: "Alta", situacao: "Em andamento" },
+    { id: 2, titulo: "Preparar divulgação da festa", responsavel: "PASCOM", prazo: "2026-12-01", prioridade: "Média", situacao: "Não iniciada" }
+  ],
+  financeiro: [
+    { mes: "Setembro/2026", entradas: 4200, saidas: 3100, unidade: "Matriz" },
+    { mes: "Outubro/2026", entradas: 3850, saidas: 2700, unidade: "Matriz" }
+  ]
+};
+
+const PERFIS = {
+  padre: { nome: "Pároco (Pe. Tiago)", icone: "⛪", menus: ["inicio", "painel", "solicitacoes", "secretaria", "comunidades", "agenda", "tarefas", "financeiro"] },
+  secretaria: { nome: "Secretaria", icone: "📋", menus: ["inicio", "secretaria", "solicitacoes", "comunidades", "agenda", "tarefas"] },
+  fiel: { nome: "Fiel", icone: "🙏", menus: ["inicio", "agenda", "solicitacoes", "comunidades"] }
+};
+
+const ROTULOS = {
+  inicio: "Início", painel: "Painel", solicitacoes: "Solicitações", secretaria: "Secretaria",
+  comunidades: "Comunidades", agenda: "Agenda", tarefas: "Tarefas", financeiro: "Financeiro"
+};
+
+/* ===================== ARMAZENAMENTO LOCAL ===================== */
+const CHAVE = "minha_paroquia_demo_v1";
+let dados = carregar();
+let sessao = { perfil: null };
+let telaAtual = "inicio";
+
+function carregar() {
+  try {
+    const salvo = localStorage.getItem(CHAVE);
+    return salvo ? JSON.parse(salvo) : JSON.parse(JSON.stringify(DADOS_INICIAIS));
+  } catch (e) {
+    return JSON.parse(JSON.stringify(DADOS_INICIAIS));
+  }
+}
+function salvar() {
+  try { localStorage.setItem(CHAVE, JSON.stringify(dados)); } catch (e) {}
+}
+function novoId(lista) {
+  return lista.length ? Math.max(...lista.map(i => i.id)) + 1 : 1;
+}
+function formatarData(iso) {
+  const [a, m, d] = iso.split("-");
+  return `${d}/${m}/${a}`;
+}
+function formatarReais(v) {
+  return "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+}
+function classeStatus(s) {
+  return { pendente: "s-pendente", aprovada: "s-aprovada", devolvida: "s-devolvida", "não aprovada": "s-nao" }[s] || "s-pendente";
+}
+
+/* ===================== RENDERIZAÇÃO ===================== */
+function render() {
+  const app = document.getElementById("app");
+  if (!sessao.perfil) {
+    app.innerHTML = telaLogin();
+    return;
+  }
+  const perfil = PERFIS[sessao.perfil];
+  if (!perfil.menus.includes(telaAtual)) telaAtual = "inicio";
+
+  const menu = perfil.menus.map(m =>
+    `<button class="${m === telaAtual ? 'ativo' : ''}" onclick="irPara('${m}')">${ROTULOS[m]}</button>`
+  ).join("");
+
+  const telas = {
+    inicio: telaInicio, painel: telaPainel, solicitacoes: telaSolicitacoes,
+    secretaria: telaSecretaria, comunidades: telaComunidades, agenda: telaAgenda,
+    tarefas: telaTarefas, financeiro: telaFinanceiro
+  };
+
+  app.innerHTML = `
+    <main>
+      <div class="aviso">Versão de demonstração. Os dados são fictícios e ficam salvos apenas neste navegador.
+        <br><button class="acao neutro" onclick="sair()">Trocar de perfil</button>
+        <button class="acao perigo" onclick="restaurarDemo()">Restaurar dados de exemplo</button>
+      </div>
+      <nav>${menu}</nav>
+      ${telas[telaAtual]()}
+    </main>`;
+}
+
+function telaLogin() {
+  return `
+    <div class="login">
+      <h2 style="text-align:center">Entrar na demonstração</h2>
+      <p>Escolha um perfil para testar o aplicativo:</p>
+      ${Object.entries(PERFIS).map(([k, p]) =>
+        `<button class="acao" onclick="entrar('${k}')">${p.icone} ${p.nome}</button>`
+      ).join("")}
+      <p style="font-size:14px">Nesta demonstração não é necessária senha.</p>
+    </div>`;
+}
+
+function telaInicio() {
+  const proximas = [...dados.agenda].sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora)).slice(0, 3);
+  return `
+    <h2>Bem-vindo(a) à Paróquia São Sebastião</h2>
+    <p>Que a paz do Senhor esteja com você.</p>
+    <h2>Próximas celebrações e compromissos</h2>
+    ${proximas.map(e => `
+      <div class="card"><h3>${e.evento}</h3>
+      <p>${formatarData(e.data)} às ${e.hora} · ${e.local}</p></div>`).join("")}
+    <h2>Comunicados</h2>
+    <div class="card"><h3>Festa de São Sebastião 2027</h3><p>Tema: Permanecer · Unir · Frutificar.</p></div>
+    <div class="card"><h3>Secretaria paroquial</h3><p>(48) 3256-0124</p></div>`;
+}
+
+function telaPainel() {
+  const pendentes = dados.solicitacoes.filter(s => s.situacao === "pendente").length;
+  const tarefasAbertas = dados.tarefas.filter(t => t.situacao !== "Concluída").length;
+  return `
+    <h2>Painel do Pároco</h2>
+    <div class="grid">
+      <div class="indicador"><b>${pendentes}</b>solicitações aguardando</div>
+      <div class="indicador"><b>${tarefasAbertas}</b>tarefas abertas</div>
+      <div class="indicador"><b>${dados.comunidades.length}</b>comunidades</div>
+      <div class="indicador"><b>${dados.pessoas.length}</b>pessoas cadastradas</div>
+    </div>
+    <h2>Próximos compromissos</h2>
+    ${dados.agenda.map(e => `<div class="card"><p><b>${formatarData(e.data)} ${e.hora}</b> · ${e.evento}</p></div>`).join("")}`;
+}
+
+function telaSolicitacoes() {
+  const ehPadre = sessao.perfil === "padre";
+  const ehFiel = sessao.perfil === "fiel";
+  return `
+    <h2>Solicitações</h2>
+    ${ehFiel ? `<div class="card"><h3>Nova solicitação</h3>
+      <label>Tipo<select id="novoTipo">
+        <option>Certidão de batismo</option><option>Reserva do salão paroquial</option>
+        <option>Agendamento de bênção de casa</option><option>Outro</option></select></label>
+      <button class="acao" onclick="novaSolicitacao()">Enviar solicitação</button></div>` : ""}
+    ${dados.solicitacoes.map(s => `
+      <div class="card">
+        <h3>${s.tipo}</h3>
+        <p>Solicitante: ${s.solicitante}</p>
+        <p><span class="status ${classeStatus(s.situacao)}">${s.situacao}</span></p>
+        ${s.orientacao ? `<p><i>Orientação: ${s.orientacao}</i></p>` : ""}
+        ${ehPadre && s.situacao === "pendente" ? `
+          <textarea id="orient-${s.id}" placeholder="Orientação (opcional)"></textarea>
+          <button class="acao" onclick="decidir(${s.id}, 'aprovada')">Aprovar</button>
+          <button class="acao neutro" onclick="decidir(${s.id}, 'devolvida')">Devolver</button>
+          <button class="acao perigo" onclick="decidir(${s.id}, 'não aprovada')">Não aprovar</button>` : ""}
+      </div>`).join("")}`;
+}
+
+function telaSecretaria() {
+  return `
+    <h2>Cadastro de pessoas</h2>
+    <div class="card">
+      <label>Nome completo<input id="cNome" placeholder="Ex.: Pedro Exemplo"></label>
+      <label>Telefone<input id="cTel" placeholder="(48) 90000-0000"></label>
+      <label>Comunidade<select id="cCom">${dados.comunidades.map(c => `<option>${c.nome}</option>`).join("")}</select></label>
+      <label>Função<input id="cFun" placeholder="Ex.: Catequista"></label>
+      <button class="acao" onclick="cadastrarPessoa()">Cadastrar pessoa fictícia</button>
+    </div>
+    <h2>Pessoas cadastradas</h2>
+    <table>
+      <tr><th>Nome</th><th>Telefone</th><th>Comunidade</th><th>Função</th></tr>
+      ${dados.pessoas.map(p => `<tr><td>${p.nome}</td><td>${p.telefone}</td><td>${p.comunidade}</td><td>${p.funcao}</td></tr>`).join("")}
+    </table>`;
+}
+
+function telaComunidades() {
+  return `
+    <h2>Comunidades</h2>
+    ${dados.comunidades.map(c => `
+      <div class="card"><h3>${c.nome}</h3>
+      <p>Padroeiro: ${c.padroeiro}</p><p>Local: ${c.local}</p><p>Coordenação: ${c.coordenacao}</p></div>`).join("")}`;
+}
+
+function telaAgenda() {
+  const lista = [...dados.agenda].sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+  return `
+    <h2>Agenda paroquial</h2>
+    ${lista.map(e => `<div class="card"><h3>${e.evento}</h3><p>${formatarData(e.data)} às ${e.hora}</p><p>${e.local}</p></div>`).join("")}
+    ${sessao.perfil !== "fiel" ? `
+    <div class="card"><h3>Incluir compromisso</h3>
+      <label>Evento<input id="aEvento" placeholder="Ex.: Reunião da PASCOM"></label>
+      <label>Data<input type="date" id="aData"></label>
+      <label>Hora<input type="time" id="aHora"></label>
+      <label>Local<input id="aLocal" placeholder="Ex.: Salão paroquial"></label>
+      <button class="acao" onclick="incluirAgenda()">Incluir na agenda</button></div>` : ""}`;
+}
+
+function telaTarefas() {
+  return `
+    <h2>Tarefas</h2>
+    ${dados.tarefas.map(t => `
+      <div class="card"><h3>${t.titulo}</h3>
+      <p>Responsável: ${t.responsavel} · Prazo: ${formatarData(t.prazo)} · Prioridade: ${t.prioridade}</p>
+      <p>Situação: <b>${t.situacao}</b></p>
+      ${t.situacao !== "Concluída" ? `<button class="acao" onclick="concluirTarefa(${t.id})">Marcar como concluída</button>` : ""}
+      </div>`).join("")}`;
+}
+
+function telaFinanceiro() {
+  return `
+    <h2>Visão financeira ilustrativa</h2>
+    <p>Valores fictícios apenas para demonstração.</p>
+    <table>
+      <tr><th>Mês</th><th>Unidade</th><th>Entradas</th><th>Saídas</th><th>Saldo</th></tr>
+      ${dados.financeiro.map(f => `
+        <tr><td>${f.mes}</td><td>${f.unidade}</td><td>${formatarReais(f.entradas)}</td>
+        <td>${formatarReais(f.saidas)}</td><td>${formatarReais(f.entradas - f.saidas)}</td></tr>`).join("")}
+    </table>`;
+}
+
+/* ===================== AÇÕES ===================== */
+function entrar(perfil) {
+  sessao.perfil = perfil;
+  telaAtual = "inicio";
+  render();
+}
+function sair() {
+  sessao.perfil = null;
+  render();
+}
+function irPara(tela) {
+  telaAtual = tela;
+  render();
+  window.scrollTo(0, 0);
+}
+function decidir(id, novaSituacao) {
+  const s = dados.solicitacoes.find(x => x.id === id);
+  const campo = document.getElementById("orient-" + id);
+  s.situacao = novaSituacao;
+  s.orientacao = campo ? campo.value.trim() : "";
+  salvar();
+  render();
+}
+function novaSolicitacao() {
+  const tipo = document.getElementById("novoTipo").value;
+  dados.solicitacoes.push({ id: novoId(dados.solicitacoes), tipo, solicitante: "Visitante demonstração", situacao: "pendente", orientacao: "" });
+  salvar();
+  render();
+}
+function cadastrarPessoa() {
+  const nome = document.getElementById("cNome").value.trim();
+  if (!nome) { alert("Informe o nome."); return; }
+  dados.pessoas.push({
+    id: novoId(dados.pessoas),
+    nome,
+    telefone: document.getElementById("cTel").value.trim() || "-",
+    comunidade: document.getElementById("cCom").value,
+    funcao: document.getElementById("cFun").value.trim() || "Fiel"
+  });
+  salvar();
+  render();
+}
+function incluirAgenda() {
+  const evento = document.getElementById("aEvento").value.trim();
+  const data = document.getElementById("aData").value;
+  const hora = document.getElementById("aHora").value;
+  if (!evento || !data || !hora) { alert("Preencha evento, data e hora."); return; }
+  dados.agenda.push({ id: novoId(dados.agenda), evento, data, hora, local: document.getElementById("aLocal").value.trim() || "-" });
+  salvar();
+  render();
+}
+function concluirTarefa(id) {
+  dados.tarefas.find(t => t.id === id).situacao = "Concluída";
+  salvar();
+  render();
+}
+function restaurarDemo() {
+  if (!confirm("Apagar os dados alterados e voltar aos exemplos?")) return;
+  dados = JSON.parse(JSON.stringify(DADOS_INICIAIS));
+  salvar();
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
