@@ -428,7 +428,7 @@ function seed() {
 }
 
 /* ================= ESTADO ================= */
-const CHAVE = 'minha-paroquia-demo-v5';
+const CHAVE = 'minha-paroquia-demo-v6';
 let dados;
 try { dados = JSON.parse(localStorage.getItem(CHAVE)) || seed(); } catch (e) { dados = seed(); }
 const estado = {
