@@ -428,7 +428,7 @@ function seed() {
 }
 
 /* ================= ESTADO ================= */
-const CHAVE = 'minha-paroquia-demo-v6';
+const CHAVE = 'minha-paroquia-demo-v7';
 let dados;
 try { dados = JSON.parse(localStorage.getItem(CHAVE)) || seed(); } catch (e) { dados = seed(); }
 const estado = {
@@ -1363,6 +1363,11 @@ function telaSalao() {
       <div class="muted">${esc(p.dados.salao)} · ${esc(p.dados.evento)}${p.dados.publico ? ` · ${esc(p.dados.publico)} pessoas` : ''}</div>
       <span class="tag ${p.alt ? 'nao' : reservaConfirmada(p) ? 'ok' : 'pend'}">${esc(situacaoProc(p))}</span>
       ${c.length ? '<span class="tag nao">conflito de horário</span>' : ''}
+      <details><summary style="font-size:14px">Dados do solicitante e do pedido</summary>
+        <div style="margin-top:6px;font-size:14px">${camposAtivos(MODELOS.salao, p.dados).filter(k => p.dados[k.k] !== undefined && p.dados[k.k] !== '' && !['salao', 'evento', 'data', 'inicio', 'fim', 'publico'].includes(k.k))
+          .map(k => `<div><span class="muted">${esc(k.rot)}:</span> ${k.tipo === 'check' ? (p.dados[k.k] ? 'Sim' : 'Não') : k.tipo === 'date' ? dataBR(p.dados[k.k]) : esc(p.dados[k.k])}</div>`).join('')}
+          <div><span class="muted">Protocolo:</span> ${esc(p.protocolo)}</div></div>
+      </details>
       ${acoes ? `<label for="sal-obs-${p.id}">Observação ou motivo (obrigatório para indisponível)</label><input type="text" id="sal-obs-${p.id}">
       <div class="actions"><button class="btn small" data-acao="salaoAprovar" data-id="${p.id}">Aprovar uso do espaço</button>
       <button class="btn small wine" data-acao="salaoIndisp" data-id="${p.id}">Data indisponível</button></div>` : ''}</div></div>`;
@@ -1372,7 +1377,7 @@ function telaSalao() {
   const confirmadas = lista.filter(p => reservaConfirmada(p) && !procEncerrado(p));
   return `
     <h2 class="title">Uso do salão</h2>
-    <div class="muted">${esc(pessoaAtual().comunidade)} · A coordenação decide sobre o uso do espaço. Nome, telefone, documentos e contrato ficam só com a Secretaria.</div>
+    <div class="muted">${esc(pessoaAtual().comunidade)} · A coordenação decide sobre o uso do espaço da sua comunidade. Contrato, assinatura e chaves seguem com a Secretaria.</div>
     <section class="card"><h3>Aguardando análise da coordenação</h3>${analise.map(p => card(p, true)).join('') || '<p class="muted">Nenhum pedido aguardando.</p>'}</section>
     <section class="card"><h3>Aprovados, aguardando contrato na Secretaria</h3>${aprovados.map(p => card(p)).join('') || '<p class="muted">Nenhum.</p>'}</section>
     <section class="card"><h3>Reservas confirmadas</h3>${confirmadas.map(p => card(p)).join('') || '<p class="muted">Nenhuma.</p>'}</section>`;
@@ -1390,7 +1395,7 @@ function abasDisponiveis() {
   if (pode('verPainel')) abas.push('paroco');
   if (pode('encaminhar')) abas.push('secretaria');
   abas.push('solicitacoes');
-  if (pode('processos') || temFuncao('fiel') || dados.processos.some(p => p.origem === eu.id)) abas.push('processos');
+  abas.push('processos'); // Secretaria/pároco: todos; demais (inclusive coordenadores): só os que solicitaram
   if (temFuncao('lideranca')) abas.push('salao');
   if (turmasVisiveis().length) abas.push('catequese');
   if (pode('cadastrarFieis') || pode('cadastrarGrupo')) abas.push('cadastro');
