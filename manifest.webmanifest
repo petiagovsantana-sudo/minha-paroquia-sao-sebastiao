@@ -1,0 +1,14 @@
+{
+  "name": "Minha Paróquia São Sebastião",
+  "short_name": "Minha Paróquia",
+  "description": "Aplicativo da Paróquia São Sebastião — Anitápolis/SC (demonstração)",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFF7EB",
+  "theme_color": "#792A25",
+  "icons": [
+    { "src": "logo.png", "sizes": "600x600", "type": "image/png", "purpose": "any" }
+  ]
+}
