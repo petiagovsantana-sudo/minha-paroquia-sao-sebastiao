@@ -45,10 +45,10 @@ const comunidadeDoSalao = s => s.startsWith('Salão Paroquial') ? MATRIZ : s.rep
 /* ================= PERMISSÕES E FUNÇÕES ================= */
 const PERMISSOES = [
   ['verPainel', 'Ver painel do pároco'],
-  ['verTodasSolicitacoes', 'Ver solicitações e processos de todos (sem isso, vê só os próprios)'],
+  ['verTodasSolicitacoes', 'Ver solicitações de todos (sem isso, vê só as próprias)'],
   ['criarSolicitacao', 'Criar solicitações e processos'],
   ['encaminhar', 'Receber, conferir e encaminhar (Secretaria)'],
-  ['processos', 'Conduzir etapas de certidões, Batismo, Matrimônio e salão'],
+  ['processos', 'Ver e conduzir certidões, Batismo, Matrimônio e contratos de salão (dados sensíveis)'],
   ['decidir', 'Aprovar, devolver, pedir esclarecimentos ou não aprovar'],
   ['cadastrarFieis', 'Cadastrar fiéis de qualquer comunidade e confirmar cadastros'],
   ['cadastrarGrupo', 'Cadastrar fiéis apenas da própria comunidade ou grupo'],
@@ -65,7 +65,7 @@ const FUNCOES = {
   fiel:       { nome: 'Fiel', perms: ['criarSolicitacao'] },
   lideranca:  { nome: 'Coordenador de comunidade ou pastoral', perms: ['criarSolicitacao', 'agendar', 'tarefas', 'cadastrarGrupo'] },
   catequista: { nome: 'Catequista', perms: ['criarSolicitacao', 'agendar'] },
-  conselho:   { nome: 'Conselho (CPP ou CAE)', perms: ['verTodasSolicitacoes', 'agendar', 'tarefas'] },
+  conselho:   { nome: 'Conselho (CPP ou CAE)', perms: ['agendar', 'tarefas'] },
   secretaria: { nome: 'Secretaria', perms: ['criarSolicitacao', 'verTodasSolicitacoes', 'encaminhar', 'processos', 'cadastrarFieis', 'catequeseTodas', 'agendar', 'tarefas', 'administrar'] },
   padre:      { nome: 'Pároco', perms: TODAS }
 };
@@ -416,8 +416,8 @@ function seed() {
   d.processos.push(b);
   d.processos.push(proc(3, '2026-0005', 'matrimonio', 4, { nubente: 'Lucas Exemplo', nubenta: 'Ana Exemplo', telefone: '(48) 90000-0004',
     consente: true, comunidade: MATRIZ, dataPretendida: '2027-05-15' }, 1, '2026-10-15T13:00:00.000Z'));
-  d.processos.push(proc(4, '2026-0006', 'salao', 3, { pessoa: 'Pessoa Física', salao: 'Salão da comunidade Santa Cecília', evento: 'Aniversário (exemplo)',
-    data: '2026-11-21', inicio: '18:00', fim: '23:00', publico: 60, solicitante: 'José Exemplo (coord. Santa Cecília)', telefone: '(48) 90000-0003',
+  d.processos.push(proc(4, '2026-0006', 'salao', 4, { pessoa: 'Pessoa Física', salao: 'Salão da comunidade Santa Cecília', evento: 'Aniversário (exemplo)',
+    data: '2026-11-21', inicio: '18:00', fim: '23:00', publico: 60, solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004',
     consente: true, regulamento: true }, 0, '2026-10-29T12:00:00.000Z'));
   d.processos.push(proc(5, '2026-0007', 'salao', 4, { pessoa: 'Pessoa Física', salao: 'Salão Paroquial (Matriz)', evento: 'Casamento civil — recepção (exemplo)',
     data: '2026-11-14', inicio: '18:00', fim: '23:59', publico: 120, solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004', consente: true, regulamento: true }, 5, '2026-10-01T12:00:00.000Z'));
@@ -474,8 +474,8 @@ function podeConduzir(p, idx) {
 function processosVisiveis() {
   const eu = pessoaAtual();
   if (!eu) return [];
-  if (pode('verTodasSolicitacoes')) return dados.processos;
-  return dados.processos.filter(p => p.origem === eu.id || (temFuncao('lideranca') && p.modelo === 'salao' && p.unidade === eu.comunidade));
+  if (pode('processos')) return dados.processos;
+  return dados.processos.filter(p => p.origem === eu.id);
 }
 const docsPendentes = p => p.docs.filter(d => !d.naoBloqueia && !['conferido', 'dispensado/alternativo'].includes(d.status));
 const dadosCompletos = p => MODELOS[p.modelo].campos.filter(c => c.completa).every(c => p.dados[c.k]);
@@ -788,8 +788,8 @@ function telaProcessos() {
   const lista = processosVisiveis().slice().sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
     .filter(p => !estado.filtro.modelo || p.modelo === estado.filtro.modelo);
   return `
-    <h2 class="title">Processos</h2>
-    <div class="muted">Certidões, Batismo, Matrimônio e reservas de salão com barra de andamento visível ao solicitante e à Secretaria.</div>
+    <h2 class="title">${ehSecretaria() ? 'Processos' : 'Meus pedidos'}</h2>
+    <div class="muted">${ehSecretaria() ? 'Certidões, Batismo, Matrimônio e reservas de salão de todas as comunidades.' : 'Acompanhe aqui o andamento dos seus pedidos de certidão, Batismo, Matrimônio ou salão.'}</div>
     ${pode('criarSolicitacao') ? `<div class="grid" style="margin-top:12px">${Object.entries(MODELOS).map(([k, M]) =>
       `<button class="escolha" style="margin:0" data-acao="procNovo" data-modelo="${k}"><b>${M.icone} ${esc(M.nome)}</b><small>Iniciar pedido</small></button>`).join('')}</div>` : ''}
     <label for="fil-modelo">Mostrar</label>
@@ -807,7 +807,7 @@ function telaProcessos() {
 const CAMPOS_RESTRITOS = ['cpf', 'rg', 'repCpf', 'repRg', 'cnpj'];
 function telaProcesso() {
   const p = procPorId(estado.proc);
-  if (!p) { estado.proc = null; return telaProcessos(); }
+  if (!p || !processosVisiveis().includes(p)) { estado.proc = null; return telaProcessos(); }
   const M = MODELOS[p.modelo];
   const prox = M.etapas[p.etapa + 1];
   const sec = ehSecretaria() || ehPadre(pessoaAtual());
@@ -866,9 +866,12 @@ function telaProcesso() {
     <section class="card"><h3>Dados do pedido</h3>${linhas}${extras}
       ${p.modelo === 'salao' && sec && p.etapa >= 2 ? '<div class="actions"><button class="btn outline" data-acao="procImprimir">Imprimir dados para o contrato</button></div><p class="muted">Contrato físico, no modelo oficial da Paróquia. Não há assinatura eletrônica.</p>' : ''}
     </section>
+    ${sec && (p.comunicar || p.alt) ? `<section class="card"><p class="alerta">Há decisão ou pendência a comunicar ao solicitante.</p><div class="actions"><button class="btn small outline" data-acao="marcarComunicado">Comunicado por telefone/presencialmente</button></div></section>` : ''}
     ${sec ? blocoWhats({ alvo: p, id: 'proc-' + p.id, tel: p.dados.telefone, consente: p.dados.consente, texto: mensagemProc(p, chave), seletor }) : ''}
-    <section class="card"><h3>Histórico</h3><ul class="hist">${p.historico.slice().reverse().map(h =>
-      `<li>${dataHoraBR(h.em)} · <b>${esc(h.acao)}</b> · ${esc(h.por)}${h.obs ? `<div class="muted">${esc(h.obs)}</div>` : ''}</li>`).join('')}</ul></section>`;
+    <section class="card"><h3>Histórico</h3><ul class="hist">${p.historico.slice().reverse().map(h => {
+      const obs = h.obs && (sec || h.acao.startsWith('Situação:')) ? h.obs : '';
+      return `<li>${dataHoraBR(h.em)} · <b>${esc(h.acao)}</b>${sec ? ' · ' + esc(h.por) : ''}${obs ? `<div class="muted">${esc(obs)}</div>` : ''}</li>`; }).join('')}</ul>
+      ${sec ? '' : '<p class="muted">Observações internas da Secretaria não aparecem aqui.</p>'}</section>`;
 }
 
 /* ================= CATEQUESE — IVC (Módulo 13) ================= */
@@ -1110,16 +1113,17 @@ function formCadastro() {
 }
 function telaCadastro() {
   const lista = pessoasDoCadastro();
-  const escopo = pode('cadastrarFieis') ? 'Todas as comunidades' : `Somente ${esc(pessoaAtual().comunidade)}`;
+  const total = pode('cadastrarFieis');
+  const escopo = total ? 'Todas as comunidades' : `Somente ${esc(pessoaAtual().comunidade)} · contatos e dados pessoais ficam com a Secretaria`;
   return `
     <h2 class="title">Cadastro de fiéis</h2>
     <div class="muted">${escopo}. O sistema avisa sobre possíveis duplicidades, sem fundir cadastros automaticamente.</div>
-    ${estado.editPessoa !== null ? formCadastro() : `<div class="actions"><button class="btn" data-acao="novoCadastro">+ Cadastrar fiel</button></div>`}
+    ${estado.editPessoa !== null ? formCadastro() : `<div class="actions"><button class="btn" data-acao="novoCadastro">${total ? '+ Cadastrar fiel' : '+ Indicar novo cadastro'}</button></div>`}
     <section class="card"><h3>Cadastros (${lista.length})</h3>
       ${lista.map(p => `
-        <div class="item"><div><b>${esc(p.nome)}</b><div class="muted">${esc(p.comunidade)} · ${esc(p.telefone || '-')}</div>
+        <div class="item"><div><b>${esc(p.nome)}</b><div class="muted">${esc(p.comunidade)}${total ? ' · ' + esc(p.telefone || '-') : ''}</div>
           <span class="tag ${p.situacao === 'ativo' ? 'ok' : 'pend'}">${esc(p.situacao)}</span><span class="tag">${esc(nomeFuncoes(p))}</span></div>
-        <button class="btn small outline" data-acao="editarCadastro" data-id="${p.id}">Editar</button></div>`).join('') || '<p class="muted">Nenhum cadastro para mostrar.</p>'}
+        ${total ? `<button class="btn small outline" data-acao="editarCadastro" data-id="${p.id}">Editar</button>` : ''}</div>`).join('') || '<p class="muted">Nenhum cadastro para mostrar.</p>'}
     </section>`;
 }
 function podeConcederPerm(k, alvo) {
@@ -1219,12 +1223,19 @@ function telaAgenda() {
 }
 
 /* ================= TAREFAS (Módulo 11) ================= */
+function tarefasVisiveis() {
+  const eu = pessoaAtual();
+  if (!eu) return [];
+  if (ehPadre(eu) || pode('encaminhar')) return dados.tarefas;
+  return dados.tarefas.filter(t => t.responsavel === eu.id || (pode('tarefas') && t.unidade === eu.comunidade));
+}
 function telaTarefas() {
   const eu = pessoaAtual();
-  const lista = dados.tarefas.slice().sort((a, b) => ({ aberta: 0, 'concluída': 1, encerrada: 2 }[a.estado] - { aberta: 0, 'concluída': 1, encerrada: 2 }[b.estado]) || String(a.prazo).localeCompare(String(b.prazo)));
+  const geral = ehPadre(eu) || pode('encaminhar');
+  const lista = tarefasVisiveis().slice().sort((a, b) => ({ aberta: 0, 'concluída': 1, encerrada: 2 }[a.estado] - { aberta: 0, 'concluída': 1, encerrada: 2 }[b.estado]) || String(a.prazo).localeCompare(String(b.prazo)));
   return `
     <h2 class="title">Tarefas</h2>
-    <div class="muted">O responsável conclui; a coordenação encerra. Prorrogação exige justificativa.</div>
+    <div class="muted">${geral ? 'Todas as tarefas da Paróquia.' : `Tarefas de ${esc(eu.comunidade)} e as atribuídas a você.`} O responsável conclui; a coordenação encerra. Prorrogação exige justificativa.</div>
     <section class="card">
       ${lista.map(t => {
         const resp = pessoaPorId(t.responsavel);
@@ -1244,10 +1255,10 @@ function telaTarefas() {
     ${pode('tarefas') ? `<section class="card"><h3>Nova tarefa</h3>
       <label for="tarefa-nome">Descrição</label><input type="text" id="tarefa-nome" placeholder="O que precisa ser feito?">
       <div class="row2">
-        <div><label for="tarefa-resp">Responsável</label><select id="tarefa-resp">${dados.pessoas.filter(p => p.situacao === 'ativo').map(p => `<option value="${p.id}">${esc(p.nome)}</option>`).join('')}</select></div>
+        <div><label for="tarefa-resp">Responsável</label><select id="tarefa-resp">${dados.pessoas.filter(p => p.situacao === 'ativo' && (geral || p.comunidade === eu.comunidade)).map(p => `<option value="${p.id}">${esc(p.nome)}</option>`).join('')}</select></div>
         <div><label for="tarefa-prazo">Prazo</label><input type="date" id="tarefa-prazo"></div>
       </div>
-      <label for="tarefa-unidade">Unidade</label><select id="tarefa-unidade"><option>Paróquia</option><option>Secretaria</option>${NOMES_UNIDADES.map(n => `<option>${esc(n)}</option>`).join('')}</select>
+      <label for="tarefa-unidade">Unidade</label><select id="tarefa-unidade">${geral ? `<option>Paróquia</option><option>Secretaria</option>${NOMES_UNIDADES.map(n => `<option>${esc(n)}</option>`).join('')}` : `<option>${esc(eu.comunidade)}</option>`}</select>
       <div class="actions"><button class="btn" data-acao="addTarefa">Criar tarefa</button></div>
     </section>` : ''}`;
 }
@@ -1272,7 +1283,7 @@ function telaFinanceiro() {
 const MAPA = [
   ['01', 'Cadastro único de pessoas e famílias', 'parcial', 'Cadastro, conferência e aviso de duplicidade. Falta: família/dependentes e histórico de vínculos.'],
   ['02', 'Comunidades, organismos e lideranças', 'parcial', '15 comunidades oficiais. Falta: pastorais/movimentos e mandatos.'],
-  ['03', 'Secretaria e atendimento', 'demo', 'Protocolo, prazo, prioridade, histórico, filtros e WhatsApp.'],
+  ['03', 'Secretaria e atendimento', 'demo', 'Painel da Secretaria, protocolo, prazo, prioridade, histórico, filtros e WhatsApp.'],
   ['04', 'Agenda, atendimentos e reservas', 'demo', 'Agenda pública/institucional/reservada, durações padrão, conflitos e salão.'],
   ['05', 'Planejamento Estratégico Pastoral Integrado', 'previsto', ''],
   ['06', 'Conselhos paroquiais — CPP, CPC e CAE', 'previsto', ''],
@@ -1300,22 +1311,92 @@ function telaModulos() {
       <span class="tag ${rot[st][0]}">${rot[st][1]}</span></div>`).join('')}</section>`;
 }
 
+/* ================= PAINEL DA SECRETARIA (Módulo 03) ================= */
+const diasAte = iso => Math.round((new Date(iso + 'T12:00:00') - new Date(hojeISO() + 'T12:00:00')) / 86400000);
+function telaSecretaria() {
+  const abertos = dados.processos.filter(p => !procEncerrado(p));
+  const novos = [
+    ...dados.solicitacoes.filter(s => s.status === 'Enviada').map(s => ({ t: s.titulo, sub: `${s.protocolo} · solicitação`, a: 'abrirSol', id: s.id })),
+    ...abertos.filter(p => p.etapa === 0 && !p.alt).map(p => ({ t: p.titulo, sub: `${p.protocolo} · ${MODELOS[p.modelo].nome}`, a: 'abrirProc', id: p.id }))
+  ];
+  const prazos = [
+    ...abertos.filter(p => p.prazo && !p.alt).map(p => ({ t: p.titulo, prazo: p.prazo, sub: p.protocolo, a: 'abrirProc', id: p.id })),
+    ...dados.solicitacoes.filter(s => s.prazo && !['Concluída', 'Não aprovada'].includes(s.status)).map(s => ({ t: s.titulo, prazo: s.prazo, sub: s.protocolo, a: 'abrirSol', id: s.id }))
+  ].filter(x => diasAte(x.prazo) <= 2).sort((a, b) => a.prazo.localeCompare(b.prazo));
+  const comunicar = abertos.filter(p => p.comunicar || (p.alt && !(p.comunic || []).some(c => c.em >= (p.historico.slice(-1)[0] || {}).em)));
+  const docs = abertos.filter(p => p.docs.some(d => ['recebido', 'em análise'].includes(d.status)));
+  const retirada = abertos.filter(p => p.modelo === 'certidao' && p.etapa === 4 && !p.alt);
+  const semConfirmar = [...dados.processos, ...dados.solicitacoes].filter(o => (o.comunic || []).length && o.comunic.slice(-1)[0].situacao === 'WhatsApp aberto');
+  const cadastros = dados.pessoas.filter(p => p.situacao !== 'ativo');
+  const chamadas = dados.turmas.flatMap(t => chamadasAtrasadas(t).length ? [{ t, n: chamadasAtrasadas(t).length }] : []);
+  const bloco = (titulo, itens, vazio) => `<section class="card"><h3>${titulo} <span class="pill">${itens.length}</span></h3>${itens.join('') || `<p class="muted">${vazio}</p>`}</section>`;
+  const linha = (t, sub, acao, id, extra = '') => `<div class="item"><div><b>${esc(t)}</b><div class="muted">${sub}</div>${extra}</div><button class="btn small outline" data-acao="${acao}" data-id="${id}">Abrir</button></div>`;
+  return `
+    <h2 class="title">Secretaria</h2>
+    <div class="muted">Fila de trabalho do dia · ${dataBR(hojeISO())} · horário de atendimento: ${esc(CONFIG.horarioSecretaria)}</div>
+    <div class="grid3" style="margin-top:12px">
+      <div class="stat"><span class="muted">Novos pedidos</span><strong>${novos.length}</strong></div>
+      <div class="stat"><span class="muted">Prazos em até 2 dias</span><strong>${prazos.length}</strong></div>
+      <div class="stat"><span class="muted">Comunicar ao solicitante</span><strong>${comunicar.length}</strong></div>
+    </div>
+    ${bloco('Novos pedidos para receber', novos.map(x => linha(x.t, esc(x.sub), x.a, x.id)), 'Nenhum pedido novo.')}
+    ${bloco('Prazos vencendo ou vencidos', prazos.map(x => { const d = diasAte(x.prazo);
+      return linha(x.t, `${esc(x.sub)} · prazo ${dataBR(x.prazo)}`, x.a, x.id, `<span class="tag ${d < 0 ? 'nao' : 'pend'}">${d < 0 ? `vencido há ${-d} dia(s)` : d === 0 ? 'vence hoje' : `vence em ${d} dia(s)`}</span>`); }), 'Nenhum prazo próximo.')}
+    ${bloco('Decisões e pendências a comunicar', comunicar.map(p => linha(p.titulo, `${esc(p.protocolo)} · ${esc(situacaoProc(p))}`, 'abrirProc', p.id)), 'Nada a comunicar.')}
+    ${bloco('Documentos recebidos aguardando conferência', docs.map(p => linha(p.titulo, `${esc(p.protocolo)} · ${p.docs.filter(d => ['recebido', 'em análise'].includes(d.status)).length} documento(s)`, 'abrirProc', p.id)), 'Nenhum documento a conferir.')}
+    ${bloco('Certidões prontas para retirada', retirada.map(p => linha(p.titulo, `${esc(p.protocolo)} · a partir de ${dataBR(p.dados.dataRetirada)}`, 'abrirProc', p.id)), 'Nenhuma certidão aguardando retirada.')}
+    ${bloco('WhatsApp aberto sem confirmação de envio', semConfirmar.map(o => linha(o.titulo, esc(o.protocolo), o.modelo ? 'abrirProc' : 'abrirSol', o.id)), 'Tudo confirmado.')}
+    ${cadastros.length ? bloco('Cadastros a conferir', cadastros.map(p => `<div class="item"><div><b>${esc(p.nome)}</b><div class="muted">${esc(p.comunidade)}${p.possivelDuplicidade ? ' · <b>possível duplicidade</b>' : ''}</div></div><button class="btn small outline" data-aba="admin">Conferir</button></div>`), '') : ''}
+    ${chamadas.length ? bloco('Catequese: chamadas não registradas', chamadas.map(x => `<div class="item"><div><b>${esc(x.t.nome)}</b><div class="muted">${x.n} encontro(s) de meses anteriores</div></div><button class="btn small outline" data-acao="abrirTurma" data-id="${x.t.id}">Abrir</button></div>`), '') : ''}`;
+}
+
+/* ================= USO DO SALÃO — visão da coordenação (sem dados pessoais) ================= */
+function salaoDaComunidade() {
+  const eu = pessoaAtual();
+  return dados.processos.filter(p => p.modelo === 'salao' && p.unidade === eu.comunidade);
+}
+function telaSalao() {
+  const lista = salaoDaComunidade().sort((a, b) => (a.dados.data + a.dados.inicio).localeCompare(b.dados.data + b.dados.inicio));
+  const card = (p, acoes) => {
+    const c = conflitosSalao(p);
+    return `<div class="item"><div style="flex:1"><b>${dataBR(p.dados.data)} · ${esc(p.dados.inicio)}–${esc(p.dados.fim)}</b>
+      <div class="muted">${esc(p.dados.salao)} · ${esc(p.dados.evento)}${p.dados.publico ? ` · ${esc(p.dados.publico)} pessoas` : ''}</div>
+      <span class="tag ${p.alt ? 'nao' : reservaConfirmada(p) ? 'ok' : 'pend'}">${esc(situacaoProc(p))}</span>
+      ${c.length ? '<span class="tag nao">conflito de horário</span>' : ''}
+      ${acoes ? `<label for="sal-obs-${p.id}">Observação ou motivo (obrigatório para indisponível)</label><input type="text" id="sal-obs-${p.id}">
+      <div class="actions"><button class="btn small" data-acao="salaoAprovar" data-id="${p.id}">Aprovar uso do espaço</button>
+      <button class="btn small wine" data-acao="salaoIndisp" data-id="${p.id}">Data indisponível</button></div>` : ''}</div></div>`;
+  };
+  const analise = lista.filter(p => !p.alt && p.etapa <= 1);
+  const aprovados = lista.filter(p => !p.alt && p.etapa >= 2 && p.etapa < 5);
+  const confirmadas = lista.filter(p => reservaConfirmada(p) && !procEncerrado(p));
+  return `
+    <h2 class="title">Uso do salão</h2>
+    <div class="muted">${esc(pessoaAtual().comunidade)} · A coordenação decide sobre o uso do espaço. Nome, telefone, documentos e contrato ficam só com a Secretaria.</div>
+    <section class="card"><h3>Aguardando análise da coordenação</h3>${analise.map(p => card(p, true)).join('') || '<p class="muted">Nenhum pedido aguardando.</p>'}</section>
+    <section class="card"><h3>Aprovados, aguardando contrato na Secretaria</h3>${aprovados.map(p => card(p)).join('') || '<p class="muted">Nenhum.</p>'}</section>
+    <section class="card"><h3>Reservas confirmadas</h3>${confirmadas.map(p => card(p)).join('') || '<p class="muted">Nenhuma.</p>'}</section>`;
+}
+
 /* ================= NAVEGAÇÃO E RENDERIZAÇÃO ================= */
-const ROTULOS = { paroco: 'Painel', solicitacoes: 'Solicitações', processos: 'Processos', catequese: 'Catequese', cadastro: 'Cadastro',
+const ROTULOS = { paroco: 'Painel', secretaria: 'Secretaria', salao: 'Uso do salão', solicitacoes: 'Solicitações', processos: 'Processos', catequese: 'Catequese', cadastro: 'Cadastro',
   admin: 'Administradores', comunidades: 'Comunidades', agenda: 'Agenda', tarefas: 'Tarefas', financeiro: 'Financeiro', modulos: 'Módulos' };
-const TELAS = { paroco: telaPainel, solicitacoes: telaSolicitacoes, processos: telaProcessos, catequese: telaCatequese, cadastro: telaCadastro,
+const TELAS = { paroco: telaPainel, secretaria: telaSecretaria, salao: telaSalao, solicitacoes: telaSolicitacoes, processos: telaProcessos, catequese: telaCatequese, cadastro: telaCadastro,
   admin: telaAdmin, comunidades: telaComunidades, agenda: telaAgenda, tarefas: telaTarefas, financeiro: telaFinanceiro, modulos: telaModulos };
 function abasDisponiveis() {
   if (estado.visitante) return ['comunidades', 'agenda'];
   const eu = pessoaAtual();
   const abas = [];
   if (pode('verPainel')) abas.push('paroco');
-  abas.push('solicitacoes', 'processos');
+  if (pode('encaminhar')) abas.push('secretaria');
+  abas.push('solicitacoes');
+  if (pode('processos') || temFuncao('fiel') || dados.processos.some(p => p.origem === eu.id)) abas.push('processos');
+  if (temFuncao('lideranca')) abas.push('salao');
   if (turmasVisiveis().length) abas.push('catequese');
   if (pode('cadastrarFieis') || pode('cadastrarGrupo')) abas.push('cadastro');
   if (pode('administrar')) abas.push('admin');
   abas.push('comunidades', 'agenda');
-  if (pode('tarefas') || dados.tarefas.some(t => t.responsavel === eu.id)) abas.push('tarefas');
+  if (pode('tarefas') || tarefasVisiveis().length) abas.push('tarefas');
   if (pode('financeiro')) abas.push('financeiro');
   abas.push('modulos');
   return abas;
@@ -1342,7 +1423,7 @@ function render() {
   topo.innerHTML = `<div class="topbar"><span>Entrou como ${p ? `<b>${esc(p.nome)}</b> · ${esc(nomeFuncoes(p))}` : '<b>Visitante</b>'}</span>
     <button class="btn outline small" data-acao="sair">Sair</button>
     <button class="btn outline small" data-acao="reset">Restaurar dados de exemplo</button></div>`;
-  tabs.innerHTML = abas.map(a => `<button data-aba="${a}" class="${a === estado.aba ? 'active' : ''}" ${a === estado.aba ? 'aria-current="page"' : ''}>${ROTULOS[a]}</button>`).join('');
+  tabs.innerHTML = abas.map(a => `<button data-aba="${a}" class="${a === estado.aba ? 'active' : ''}" ${a === estado.aba ? 'aria-current="page"' : ''}>${(a === 'processos' && !ehSecretaria() ? 'Meus pedidos' : ROTULOS[a])}</button>`).join('');
   app.innerHTML = toast + TELAS[estado.aba]();
   const ativa = tabs.querySelector('.active');
   if (ativa && ativa.scrollIntoView) ativa.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -1358,7 +1439,7 @@ function sairDaSessao() { estado.pessoaId = null; estado.visitante = false; esta
 const ACOES = {
   entrar() {
     estado.pessoaId = Number(valor('login-pessoa')); estado.visitante = false; limparNavegacao(); estado.turma = null; estado.ano = null;
-    estado.aba = pode('verPainel') ? 'paroco' : temFuncao('catequista') ? 'catequese' : 'solicitacoes';
+    estado.aba = pode('verPainel') ? 'paroco' : pode('encaminhar') ? 'secretaria' : temFuncao('catequista') ? 'catequese' : temFuncao('lideranca') ? 'salao' : 'solicitacoes';
     registrar('Entrou no aplicativo'); ir();
   },
   sair() { sairDaSessao(); render(); },
@@ -1466,6 +1547,28 @@ const ACOES = {
     historico(p, 'Dados para contrato impressos'); salvar();
   },
 
+  // Uso do salão (coordenação)
+  salaoAprovar(d) {
+    const p = procPorId(Number(d.id));
+    if (!p || !podeConduzir(p, 2)) return alert('Sem competência para esta decisão.');
+    const c = conflitosSalao(p);
+    if (c.some(reservaConfirmada)) return alert('Já existe reserva CONFIRMADA neste horário. Marque “Data indisponível”.');
+    if (c.length && !confirm('Há outro pedido em análise para o mesmo horário. Aprovar mesmo assim?')) return;
+    const obs = valor('sal-obs-' + p.id);
+    if (p.etapa === 0) { p.etapa = 1; historico(p, MODELOS.salao.etapas[1].n); }
+    p.etapa = 2; historico(p, MODELOS.salao.etapas[2].n, obs); p.comunicar = true;
+    ir('Uso aprovado. A Secretaria segue com o contrato e comunica o solicitante.');
+  },
+  salaoIndisp(d) {
+    const p = procPorId(Number(d.id));
+    if (!p || !podeConduzir(p, 2)) return alert('Sem competência para esta decisão.');
+    const obs = valor('sal-obs-' + p.id);
+    if (!obs) return alert('Informe o motivo.');
+    p.alt = 'Data indisponível'; p.pendencias = obs; historico(p, 'Situação: Data indisponível', obs); p.comunicar = true;
+    ir('Registrado. A Secretaria vai comunicar o solicitante.');
+  },
+  marcarComunicado() { const p = procPorId(estado.proc); p.comunicar = false; historico(p, 'Solicitante comunicado (por telefone ou presencialmente)'); ir('Registrado como comunicado.'); },
+
   // WhatsApp
   waAbrir(d) {
     const a = alvoComunicacao(d.alvo); if (!a) return;
@@ -1474,6 +1577,7 @@ const ACOES = {
     window.open(`https://wa.me/${num || ''}?text=${encodeURIComponent(texto)}`, '_blank', 'noopener');
     a.obj.comunic = a.obj.comunic || [];
     a.obj.comunic.push({ em: agoraISO(), por: nomeAtual(), situacao: 'WhatsApp aberto' });
+    a.obj.comunicar = false;
     registrar(`${a.obj.protocolo || a.obj.nome}: WhatsApp aberto (envio não confirmado)`);
     ir('WhatsApp aberto. Depois de enviar, marque “envio confirmado manualmente”.');
   },
@@ -1535,7 +1639,7 @@ const ACOES = {
 
   // Cadastro e administração
   novoCadastro() { estado.editPessoa = 'novo'; render(); },
-  editarCadastro(d) { estado.editPessoa = Number(d.id); render(); },
+  editarCadastro(d) { if (!pode('cadastrarFieis')) return; estado.editPessoa = Number(d.id); render(); },
   cancelarCadastro() { estado.editPessoa = null; render(); },
   salvarCadastro() {
     const nome = valor('p-nome'); if (!nome) return alert('Informe o nome (fictício).');
@@ -1658,7 +1762,7 @@ document.addEventListener('change', e => {
 });
 
 // Expor estado apenas para testes automatizados
-window.__mp = { get dados() { return dados; }, estado, CONFIG, MODELOS, alertasTurma, telefoneWa, addDiasUteis };
+window.__mp = { get dados() { return dados; }, estado, render, CONFIG, MODELOS, alertasTurma, telefoneWa, addDiasUteis };
 
 if ('serviceWorker' in navigator && /^https:|localhost|127\.0\.0\.1/.test(location.href)) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
