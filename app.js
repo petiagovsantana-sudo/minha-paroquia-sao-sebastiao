@@ -11,7 +11,16 @@ const CONFIG = {
   horarioSecretaria: '[horário da Secretaria a confirmar]', // [DEPENDÊNCIA] Anexo F
   valorCertidao: 20,     // Anexo A — valor ordinário informado
   prazoCertidaoDiasUteis: 4,
-  valorBatismo: 30       // Anexo C — não é impedimento sacramental
+  valorBatismo: 30,      // Anexo C — não é impedimento sacramental
+  // Contrato de locação do salão (modelo oficial, Anexo D.1)
+  locadora: {
+    nome: 'MITRA METROPOLITANA DE FLORIANÓPOLIS', fantasia: 'PARÓQUIA SÃO SEBASTIÃO', cnpj: '83.932.343/0004-64',
+    endereco: 'Rua Jacinto Matos, 86 – Centro – Anitápolis – SC, CEP 88.475-000',
+    paroco: 'Pe. Tiago Vicente Santana', parocoQualif: 'brasileiro, solteiro, ministro de culto',
+    parocoRg: '', parocoCpf: '' // repositório público: deixe em branco e preencha à mão no contrato impresso
+  },
+  enderecoSalao: { 'Salão Paroquial (Matriz)': 'Rua Manoel Mariano da Cruz, s/nº, bairro Centro, CEP 88.475-000' },
+  viasContrato: 2
 };
 
 /* ================= COMUNIDADES (Módulo 02: 15 oficiais) ================= */
@@ -40,6 +49,7 @@ const OUTROS_LOCAIS = [
 const NOMES_UNIDADES = UNIDADES.map(u => u.nome);
 const MATRIZ = NOMES_UNIDADES[0];
 const SALOES = ['Salão Paroquial (Matriz)', ...NOMES_UNIDADES.slice(1).map(n => 'Salão da comunidade ' + n)];
+const ESTADOS_CIVIS = ['solteiro(a)', 'casado(a)', 'união estável', 'divorciado(a)', 'separado(a) judicialmente', 'viúvo(a)'];
 const comunidadeDoSalao = s => s.startsWith('Salão Paroquial') ? MATRIZ : s.replace('Salão da comunidade ', '');
 
 /* ================= PERMISSÕES E FUNÇÕES ================= */
@@ -221,61 +231,80 @@ const MODELOS = {
 
   salao: {
     nome: 'Reserva / locação de salão', icone: '🏛️',
-    ajuda: 'Pedido pendente não é reserva confirmada. A reserva só é confirmada após contrato assinado presencialmente. Valores, caução e condições seguem o regulamento aprovado — o app não inventa preços.',
+    ajuda: 'Primeiro você pede a data e os horários das chaves. A Secretaria confere; aprovando, o app libera o formulário com os dados do contrato e os pontos principais que você precisa saber. A reserva só é confirmada após o contrato assinado presencialmente.',
     campos: [
-      { k: 'pessoa', rot: 'Contratante', tipo: 'select', ops: ['Pessoa Física', 'Pessoa Jurídica'], obrig: true, recarrega: true },
+      // ---- Fase 1: pedido (data e chaves) ----
+      { k: 'pessoa', rot: 'O contrato será em nome de', tipo: 'select', ops: ['Pessoa Física', 'Pessoa Jurídica'], obrig: true, recarrega: true },
       { k: 'salao', rot: 'Local a ser alugado', tipo: 'select', ops: SALOES, obrig: true },
       { k: 'evento', rot: 'Evento / finalidade', obrig: true },
       { k: 'data', rot: 'Data do evento', tipo: 'date', obrig: true },
-      { k: 'inicio', rot: 'Início', tipo: 'time', obrig: true },
-      { k: 'fim', rot: 'Término', tipo: 'time', obrig: true },
+      { k: 'inicio', rot: 'Início do evento', tipo: 'time', obrig: true },
+      { k: 'fim', rot: 'Término do evento', tipo: 'time', obrig: true },
       { k: 'publico', rot: 'Público estimado', tipo: 'number' },
-      { k: 'solicitante', rot: 'Nome completo', obrig: true, so: 'Pessoa Física' },
-      { k: 'profissao', rot: 'Profissão', so: 'Pessoa Física' },
-      { k: 'cpf', rot: 'CPF', so: 'Pessoa Física' },
-      { k: 'rg', rot: 'RG', so: 'Pessoa Física' },
-      { k: 'endereco', rot: 'Endereço', so: 'Pessoa Física' },
-      { k: 'estadoCivil', rot: 'Estado civil', so: 'Pessoa Física' },
-      { k: 'empresa', rot: 'Nome da empresa', obrig: true, so: 'Pessoa Jurídica' },
-      { k: 'cnpj', rot: 'CNPJ', so: 'Pessoa Jurídica' },
-      { k: 'enderecoEmpresa', rot: 'Endereço da empresa', so: 'Pessoa Jurídica' },
-      { k: 'repNome', rot: 'Representante legal: nome', obrig: true, so: 'Pessoa Jurídica' },
-      { k: 'repFuncao', rot: 'Representante: função', so: 'Pessoa Jurídica' },
-      { k: 'repCpf', rot: 'Representante: CPF', so: 'Pessoa Jurídica' },
-      { k: 'repRg', rot: 'Representante: RG', so: 'Pessoa Jurídica' },
-      { k: 'repEndereco', rot: 'Representante: endereço', so: 'Pessoa Jurídica' },
-      { k: 'repEstadoCivil', rot: 'Representante: estado civil', so: 'Pessoa Jurídica' },
+      { k: 'chaveRet', rot: 'Quero pegar a chave — data', tipo: 'date', obrig: true, ajuda: 'Na retirada é feita a vistoria inicial e a leitura da luz e do gás.' },
+      { k: 'chaveRetHora', rot: 'Quero pegar a chave — horário', tipo: 'time', obrig: true },
+      { k: 'chaveDev', rot: 'Vou devolver a chave — data', tipo: 'date', obrig: true, ajuda: 'Na devolução é feita a vistoria final e a leitura final da luz e do gás.' },
+      { k: 'chaveDevHora', rot: 'Vou devolver a chave — horário', tipo: 'time', obrig: true },
+      { k: 'solicitante', rot: 'Seu nome (contato do pedido)', obrig: true },
       { k: 'telefone', rot: 'Telefone / WhatsApp', obrig: true },
       { k: 'consente', rot: 'Autorizo contato por WhatsApp sobre esta reserva', tipo: 'check' },
-      { k: 'vistoria', rot: 'Data da vistoria e entrega das chaves', tipo: 'date' },
-      { k: 'devolucao', rot: 'Data da devolução das chaves e vistoria final', tipo: 'date' },
-      { k: 'valorBase', rot: 'Valor base da locação (conforme regulamento)', tipo: 'number', ajuda: 'Mais luz e gás consumidos, apurados na vistoria final.' },
-      { k: 'regulamento', rot: 'Declaro ciência do regulamento de uso do salão', tipo: 'check', obrig: true },
-      { k: 'obs', rot: 'Equipamentos, montagem/desmontagem e observações', tipo: 'textarea' }
+      { k: 'obs', rot: 'Equipamentos, montagem/desmontagem e observações', tipo: 'textarea' },
+      // ---- Fase 2: dados do contrato (liberados após aprovação da Secretaria) ----
+      { k: 'locNome', rot: 'Nome completo (como no documento)', obrig: true, so: 'Pessoa Física', fase: 'contrato' },
+      { k: 'nacionalidade', rot: 'Nacionalidade', obrig: true, so: 'Pessoa Física', fase: 'contrato', padrao: 'brasileiro(a)' },
+      { k: 'estadoCivil', rot: 'Estado civil', tipo: 'select', ops: ESTADOS_CIVIS, obrig: true, so: 'Pessoa Física', fase: 'contrato' },
+      { k: 'profissao', rot: 'Profissão', obrig: true, so: 'Pessoa Física', fase: 'contrato' },
+      { k: 'cpf', rot: 'CPF', obrig: true, so: 'Pessoa Física', fase: 'contrato', valida: 'cpf' },
+      { k: 'rg', rot: 'RG (com órgão emissor)', obrig: true, so: 'Pessoa Física', fase: 'contrato' },
+      { k: 'endereco', rot: 'Endereço residencial completo (rua, nº, bairro, cidade/UF, CEP)', obrig: true, so: 'Pessoa Física', fase: 'contrato' },
+      { k: 'empresa', rot: 'Razão social', obrig: true, so: 'Pessoa Jurídica', fase: 'contrato', ajuda: 'Como consta no cartão CNPJ.' },
+      { k: 'cnpj', rot: 'CNPJ', obrig: true, so: 'Pessoa Jurídica', fase: 'contrato', valida: 'cnpj' },
+      { k: 'enderecoEmpresa', rot: 'Endereço completo da empresa (rua, nº, bairro, cidade/UF, CEP)', obrig: true, so: 'Pessoa Jurídica', fase: 'contrato' },
+      { k: 'repNome', rot: 'Representante legal: nome completo', obrig: true, so: 'Pessoa Jurídica', fase: 'contrato', ajuda: 'Quem assina pela empresa (sócio, administrador ou procurador).' },
+      { k: 'repFuncao', rot: 'Representante: função na empresa', obrig: true, so: 'Pessoa Jurídica', fase: 'contrato' },
+      { k: 'repEstadoCivil', rot: 'Representante: estado civil', tipo: 'select', ops: ESTADOS_CIVIS, obrig: true, so: 'Pessoa Jurídica', fase: 'contrato' },
+      { k: 'repCpf', rot: 'Representante: CPF', obrig: true, so: 'Pessoa Jurídica', fase: 'contrato', valida: 'cpf' },
+      { k: 'repRg', rot: 'Representante: RG (com órgão emissor)', obrig: true, so: 'Pessoa Jurídica', fase: 'contrato' },
+      { k: 'repEndereco', rot: 'Representante: endereço residencial completo', obrig: true, so: 'Pessoa Jurídica', fase: 'contrato' },
+      { k: 'email', rot: 'E-mail (opcional)', fase: 'contrato' },
+      { k: 'ciente', rot: 'Li os pontos principais do contrato acima e estou de acordo', tipo: 'check', obrig: true, fase: 'contrato' }
     ],
     titulo: d => `${d.salao} — ${d.evento}`,
     etapas: [
-      { n: 'Solicitação enviada' },
+      { n: 'Pedido enviado (data e chaves)' },
       { n: 'Em análise (Secretaria e coordenação)', quem: 'coord', msg: 'recebimento' },
-      { n: 'Reserva aprovada (sujeita ao contrato)', quem: 'coord', checaConflito: true },
-      { n: 'Contrato gerado e impresso pela Secretaria', quem: 'sec' },
+      { n: 'Data aprovada — liberado para os dados do contrato', quem: 'sec', checaConflito: true, msg: 'liberado', pede: [
+        { k: 'valorBase', rot: 'Valor fixo da locação (R$)', tipo: 'number', obrig: true, ajuda: 'Conforme o regulamento. Luz e gás são cobrados à parte, pela medição.' },
+        { k: 'pagData', rot: 'Data do pagamento do valor fixo', tipo: 'date', obrig: true },
+        { k: 'pagForma', rot: 'Forma de pagamento', tipo: 'select', ops: ['PIX', 'Dinheiro', 'Transferência bancária', 'Boleto'], obrig: true },
+        { k: 'prazoConsumos', rot: 'Prazo para pagar luz e gás', obrig: true, padrao: 'até 5 (cinco) dias após a vistoria final' }] },
+      { n: 'Dados do contrato enviados pelo locatário', quem: 'locatario', dadosContrato: true },
+      { n: 'Dados conferidos — contrato gerado e impresso', quem: 'sec' },
       { n: 'Aguardando assinatura presencial', quem: 'sec' },
       { n: 'Contrato assinado — reserva CONFIRMADA', quem: 'sec', msg: 'confirmacao', confirma: true },
-      { n: 'Vistoria inicial e chaves entregues', quem: 'sec', pede: [{ k: 'chavesPara', rot: 'Chaves entregues a (nome)', obrig: true }] },
+      { n: 'Vistoria inicial e chaves entregues', quem: 'sec', pede: [
+        { k: 'chavesPara', rot: 'Chaves entregues a (nome)', obrig: true },
+        { k: 'luzIni', rot: 'Leitura inicial do medidor de energia (kWh)', obrig: true },
+        { k: 'gasIni', rot: 'Gás: medição/quantidade inicial (informar unidade)', obrig: true }] },
       { n: 'Evento realizado', quem: 'sec' },
-      { n: 'Chaves devolvidas e vistoria final', quem: 'sec' },
-      { n: 'Consumos conferidos — contrato encerrado', quem: 'sec', pede: [{ k: 'consumos', rot: 'Luz e gás: medições e acerto final', obrig: true, tipo: 'textarea' }] }
+      { n: 'Chaves devolvidas e vistoria final', quem: 'sec', pede: [
+        { k: 'luzFim', rot: 'Leitura final do medidor de energia (kWh)', obrig: true },
+        { k: 'gasFim', rot: 'Gás: medição/quantidade final (mesma unidade)', obrig: true }] },
+      { n: 'Consumos conferidos — contrato encerrado', quem: 'sec', pede: [{ k: 'consumos', rot: 'Demonstrativo: tarifas, valores de luz e gás e acerto final', obrig: true, tipo: 'textarea' }] }
     ],
     alt: ['Data indisponível', 'Devolvida para ajustes', 'Não aprovada', 'Cancelada'],
     altMsg: { 'Devolvida para ajustes': 'pendencia', 'Cancelada': 'cancelamento' },
     msgs: {
-      recebimento: 'Olá, {nome}! Recebemos seu pedido de reserva do {salao} para {data}, das {inicio} às {fim}, protocolo {protocolo}. O pedido ainda depende de análise.',
-      confirmacao: 'Olá, {nome}! Sua reserva do {salao} está CONFIRMADA para {data}, das {inicio} às {fim}, para {finalidade}. Protocolo {protocolo}. Orientações: {orientacoes}. Paróquia São Sebastião.',
+      recebimento: 'Olá, {nome}! Recebemos seu pedido de reserva do {salao} para {data}, das {inicio} às {fim}, protocolo {protocolo}. Chave: retirada {ret} e devolução {dev}. O pedido ainda depende de análise.',
+      liberado: 'Olá, {nome}! A data {data} no {salao} foi aprovada pela Secretaria (protocolo {protocolo}). Agora, pelo aplicativo, envie os dados para o contrato e leia os pontos principais. Valor fixo: {valor}, mais luz e gás consumidos. A reserva só fica confirmada após a assinatura presencial do contrato.',
+      confirmacao: 'Olá, {nome}! Sua reserva do {salao} está CONFIRMADA para {data}, das {inicio} às {fim}, para {finalidade}. Protocolo {protocolo}. Retirada da chave e vistoria inicial: {ret}. Devolução da chave e vistoria final: {dev}. Paróquia São Sebastião.',
       pendencia: 'Olá, {nome}! Para concluir sua reserva do {salao}, precisamos de {pendencias}. A data ainda não está confirmada.',
       cancelamento: 'Olá, {nome}! Informamos que a reserva {protocolo}, referente ao {salao} em {data}, foi cancelada conforme registro do processo. Entre em contato com a Secretaria para orientações.'
     },
-    vars: p => ({ nome: p.dados.pessoa === 'Pessoa Jurídica' ? p.dados.repNome : p.dados.solicitante, salao: p.dados.salao, data: dataBR(p.dados.data),
-      inicio: p.dados.inicio, fim: p.dados.fim, finalidade: p.dados.evento, orientacoes: '[orientações do regulamento]' }),
+    vars: p => ({ nome: p.dados.solicitante || p.dados.repNome || p.dados.locNome, salao: p.dados.salao, data: dataBR(p.dados.data),
+      inicio: p.dados.inicio, fim: p.dados.fim, finalidade: p.dados.evento,
+      ret: p.dados.chaveRet ? `${dataBR(p.dados.chaveRet)} às ${p.dados.chaveRetHora}` : '', dev: p.dados.chaveDev ? `${dataBR(p.dados.chaveDev)} às ${p.dados.chaveDevHora}` : '',
+      valor: p.dados.valorBase ? reais(p.dados.valorBase) : '' }),
     docs: () => []
   }
 };
@@ -417,18 +446,23 @@ function seed() {
   d.processos.push(proc(3, '2026-0005', 'matrimonio', 4, { nubente: 'Lucas Exemplo', nubenta: 'Ana Exemplo', telefone: '(48) 90000-0004',
     consente: true, comunidade: MATRIZ, dataPretendida: '2027-05-15' }, 1, '2026-10-15T13:00:00.000Z'));
   d.processos.push(proc(4, '2026-0006', 'salao', 4, { pessoa: 'Pessoa Física', salao: 'Salão da comunidade Santa Cecília', evento: 'Aniversário (exemplo)',
-    data: '2026-11-21', inicio: '18:00', fim: '23:00', publico: 60, solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004',
-    consente: true, regulamento: true }, 0, '2026-10-29T12:00:00.000Z'));
+    data: '2026-11-21', inicio: '18:00', fim: '23:00', publico: 60, chaveRet: '2026-11-21', chaveRetHora: '09:00', chaveDev: '2026-11-22', chaveDevHora: '10:00',
+    solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004', consente: true }, 0, '2026-10-29T12:00:00.000Z'));
   d.processos.push(proc(5, '2026-0007', 'salao', 4, { pessoa: 'Pessoa Física', salao: 'Salão Paroquial (Matriz)', evento: 'Casamento civil — recepção (exemplo)',
-    data: '2026-11-14', inicio: '18:00', fim: '23:59', publico: 120, solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004', consente: true, regulamento: true }, 5, '2026-10-01T12:00:00.000Z'));
+    data: '2026-11-14', inicio: '18:00', fim: '23:59', publico: 120, chaveRet: '2026-11-14', chaveRetHora: '08:00', chaveDev: '2026-11-15', chaveDevHora: '12:00',
+    solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004', consente: true,
+    valorBase: 800, pagData: '2026-11-07', pagForma: 'PIX', prazoConsumos: 'até 5 (cinco) dias após a vistoria final',
+    locNome: 'Ana Exemplo da Silva', nacionalidade: 'brasileira', estadoCivil: 'solteiro(a)', profissao: 'professora', cpf: '111.444.777-35', rg: '0.000.000 SSP/SC',
+    endereco: 'Rua Exemplo, 100, Centro, Anitápolis/SC, CEP 88.475-000', ciente: true }, 6, '2026-10-01T12:00:00.000Z'));
   d.processos.push(proc(6, '2026-0008', 'salao', 4, { pessoa: 'Pessoa Jurídica', salao: 'Salão Paroquial (Matriz)', evento: 'Confraternização de empresa (exemplo)',
-    data: '2026-11-14', inicio: '20:00', fim: '23:00', publico: 40, empresa: 'Empresa Exemplo Ltda.', repNome: 'Ana Exemplo', telefone: '(48) 90000-0004',
-    consente: true, regulamento: true }, 1, '2026-10-30T12:00:00.000Z'));
+    data: '2026-12-12', inicio: '20:00', fim: '23:00', publico: 40, chaveRet: '2026-12-12', chaveRetHora: '14:00', chaveDev: '2026-12-13', chaveDevHora: '09:00',
+    solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004', consente: true,
+    valorBase: 600, pagData: '2026-12-05', pagForma: 'PIX', prazoConsumos: 'até 5 (cinco) dias após a vistoria final' }, 2, '2026-10-30T12:00:00.000Z'));
   return d;
 }
 
 /* ================= ESTADO ================= */
-const CHAVE = 'minha-paroquia-demo-v7';
+const CHAVE = 'minha-paroquia-demo-v8';
 let dados;
 try { dados = JSON.parse(localStorage.getItem(CHAVE)) || seed(); } catch (e) { dados = seed(); }
 const estado = {
@@ -469,6 +503,7 @@ function podeConduzir(p, idx) {
   if (ehPadre(eu)) return true;
   if (E.quem === 'paroco') return false;
   if (ehSecretaria()) return true;
+  if (E.quem === 'locatario') return !!eu && p.origem === eu.id;
   return E.quem === 'coord' && temFuncao('lideranca') && eu.comunidade === p.unidade;
 }
 function processosVisiveis() {
@@ -479,7 +514,8 @@ function processosVisiveis() {
 }
 const docsPendentes = p => p.docs.filter(d => !d.naoBloqueia && !['conferido', 'dispensado/alternativo'].includes(d.status));
 const dadosCompletos = p => MODELOS[p.modelo].campos.filter(c => c.completa).every(c => p.dados[c.k]);
-const reservaConfirmada = p => p.modelo === 'salao' && p.etapa >= 5 && !p.alt;
+const ETAPA_CONFIRMA_SALAO = MODELOS.salao.etapas.findIndex(e => e.confirma);
+const reservaConfirmada = p => p.modelo === 'salao' && p.etapa >= ETAPA_CONFIRMA_SALAO && !p.alt;
 function conflitosSalao(p) {
   if (p.modelo !== 'salao') return [];
   return dados.processos.filter(o => o.id !== p.id && o.modelo === 'salao' && o.dados.salao === p.dados.salao && o.dados.data === p.dados.data &&
@@ -542,6 +578,7 @@ function alvoComunicacao(ref) {
 }
 
 function campoHTML(c, val, prefixo = 'f') {
+  if ((val === undefined || val === '') && c.padrao !== undefined) val = c.padrao;
   const id = `${prefixo}-${c.k}`;
   const req = c.obrig ? ' <span aria-hidden="true" style="color:var(--wine)">*</span>' : '';
   const ajuda = c.ajuda ? `<div class="muted">${esc(c.ajuda)}</div>` : '';
@@ -562,6 +599,48 @@ function lerCampos(campos, prefixo = 'f') {
   return out;
 }
 const camposAtivos = (M, d) => M.campos.filter(c => !c.so || c.so === (d.pessoa || 'Pessoa Física'));
+const camposPedido = (M, d) => camposAtivos(M, d).filter(c => !c.fase);
+const camposContrato = (M, d) => camposAtivos(M, d).filter(c => c.fase === 'contrato');
+function validaCPF(v) {
+  const n = String(v || '').replace(/\D/g, '');
+  if (n.length !== 11 || /^(\d)\1+$/.test(n)) return false;
+  const dv = t => { let s = 0; for (let i = 0; i < t; i++) s += Number(n[i]) * (t + 1 - i); const r = (s * 10) % 11; return r === 10 ? 0 : r; };
+  return dv(9) === Number(n[9]) && dv(10) === Number(n[10]);
+}
+function validaCNPJ(v) {
+  const n = String(v || '').replace(/\D/g, '');
+  if (n.length !== 14 || /^(\d)\1+$/.test(n)) return false;
+  const dv = t => { const pesos = t === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    const s = pesos.reduce((a, p, i) => a + Number(n[i]) * p, 0); const r = s % 11; return r < 2 ? 0 : 11 - r; };
+  return dv(12) === Number(n[12]) && dv(13) === Number(n[13]);
+}
+// Valor por extenso (reais e centavos)
+function porExtenso(valor) {
+  const U = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+  const D = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+  const C = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+  const ate999 = n => {
+    if (n === 100) return 'cem';
+    const c = Math.floor(n / 100), r = n % 100, p = [];
+    if (c) p.push(C[c]);
+    if (r < 20) { if (r) p.push(U[r]); } else { p.push(D[Math.floor(r / 10)] + (r % 10 ? ' e ' + U[r % 10] : '')); }
+    return p.join(' e ');
+  };
+  const inteiro = n => {
+    if (n === 0) return 'zero';
+    const mi = Math.floor(n / 1e6), mil = Math.floor((n % 1e6) / 1000), r = n % 1000, p = [];
+    if (mi) p.push(mi === 1 ? 'um milhão' : ate999(mi) + ' milhões');
+    if (mil) p.push(mil === 1 ? 'mil' : ate999(mil) + ' mil');
+    if (r) p.push(ate999(r));
+    if (p.length > 1 && r && (r < 100 || r % 100 === 0)) { const u = p.pop(); return p.join(', ') + ' e ' + u; }
+    return p.join(' ');
+  };
+  const v = Math.round(Number(valor) * 100); if (!isFinite(v) || v < 0) return '';
+  const re = Math.floor(v / 100), ce = v % 100, partes = [];
+  if (re) partes.push(inteiro(re) + (re % 1e6 === 0 ? ' de' : '') + (re === 1 ? ' real' : ' reais'));
+  if (ce) partes.push(inteiro(ce) + (ce === 1 ? ' centavo' : ' centavos'));
+  return partes.join(' e ') || 'zero real';
+}
 
 /* ================= TELAS ANTES DE ENTRAR ================= */
 function telaBoasVindas() {
@@ -773,7 +852,7 @@ function formProcessoCampos(modelo) {
   const eu = pessoaAtual();
   const base = eu ? { solicitante: eu.nome, telefone: eu.telefone, consente: eu.consente, comunidade: eu.comunidade } : {};
   const d = Object.assign(base, estado.rascunho);
-  return `<p class="bloco muted">${esc(M.ajuda)}</p>${camposAtivos(M, d).map(c => campoHTML(c, d[c.k])).join('')}`;
+  return `<p class="bloco muted">${esc(M.ajuda)}</p>${camposPedido(M, d).map(c => campoHTML(c, d[c.k])).join('')}`;
 }
 function telaProcessos() {
   if (estado.proc !== null) return telaProcesso();
@@ -805,6 +884,121 @@ function telaProcessos() {
     </section>`;
 }
 const CAMPOS_RESTRITOS = ['cpf', 'rg', 'repCpf', 'repRg', 'cnpj'];
+/* ---- Salão: pontos do contrato que o locatário precisa lembrar (Anexo D.1) ---- */
+function lembretesContrato(p) {
+  const d = p.dados;
+  const ret = d.chaveRet ? `${dataBR(d.chaveRet)} às ${esc(d.chaveRetHora)}` : 'data a combinar';
+  const dev = d.chaveDev ? `${dataBR(d.chaveDev)} às ${esc(d.chaveDevHora)}` : 'data a combinar';
+  const itens = [
+    ['📅', 'Período de uso', `O salão fica sob sua responsabilidade da <b>retirada da chave (${ret})</b> até a <b>devolução (${dev})</b>. Uso exclusivo para: ${esc(d.evento || 'o evento informado')}, em ${dataBR(d.data)}. (Cl. 1ª e 3ª)`],
+    ['💰', 'Valor', `${d.valorBase ? `Valor fixo de <b>${reais(d.valorBase)}</b> (${esc(porExtenso(d.valorBase))})` : 'Valor fixo conforme o regulamento'}${d.pagData ? `, a pagar até <b>${dataBR(d.pagData)}</b>` : ''}${d.pagForma ? ` por <b>${esc(d.pagForma)}</b>` : ''}. <b>Mais a luz e o gás consumidos</b>. (Cl. 4ª)`],
+    ['⚡', 'Luz e gás', `Na retirada e na devolução da chave são anotadas as leituras do medidor de energia e do gás, num termo de vistoria assinado por você. O consumo é a diferença, vezes a tarifa informada. Pagamento: ${esc(d.prazoConsumos || 'no prazo combinado')}. (Cl. 4ª §§ 1º a 4º e 7ª)`],
+    ['⏰', 'Atraso no pagamento', 'Juros de 1% ao mês e multa de 2%, com correção pelo IGP-M/FGV. (Cl. 4ª)'],
+    ['🧹', 'Conservação e limpeza', 'Você cuida da limpeza, da ordem e da conservação. Devolva o salão limpo, desocupado (inclusive dos equipamentos que trouxer) e com todos os utensílios do inventário. Danos causados por você ou por convidados são de sua responsabilidade. (Cl. 2ª, 11ª e 17ª)'],
+    ['🚫', 'Não é permitido', 'Fazer obras ou benfeitorias, trocar o segredo das fechaduras, emprestar ou sublocar o salão ou os móveis. (Cl. 3ª, 16ª e 18ª)'],
+    ['📄', 'Licenças e taxas do evento', 'Licenças municipais, taxas, ECAD (música), aluguel de som e encargos de pessoal contratado ficam por sua conta. (Cl. 13ª)'],
+    ['🛡️', 'Segurança', 'A segurança do evento é sua; a Paróquia não responde por brigas, acidentes, furtos ou roubos de veículos e pertences. (Cl. 12ª e 15ª)'],
+    ['🔇', 'Vizinhança', 'Respeite o sossego dos vizinhos e transeuntes. Barulho excessivo pode gerar responsabilização civil e criminal, além de multa. (Cl. 14ª)'],
+    ['❌', 'Cancelamento', 'Se você cancelar, o valor integral continua devido (salvo liberalidade da Paróquia). Se a Paróquia precisar cancelar por força maior, os valores são devolvidos, sem indenização. (Cl. 9ª e 20ª)'],
+    ['⚖️', 'Multa por infração', 'Descumprir qualquer cláusula gera multa de uma vez o valor do aluguel. (Cl. 21ª)'],
+    ['✍️', 'Confirmação', 'A reserva só é confirmada com o contrato assinado <b>presencialmente</b> na Secretaria. Leve documento com foto' + (d.pessoa === 'Pessoa Jurídica' ? ', cartão CNPJ e, se não for sócio, a procuração.' : '.')]
+  ];
+  return `<section class="card"><h3>O que você precisa lembrar do contrato</h3>
+    <p class="muted">Resumo dos pontos principais. O texto completo é o do contrato que será assinado na Secretaria.</p>
+    ${itens.map(([i, t, x]) => `<div class="lembrete"><span class="ico" aria-hidden="true">${i}</span><div><strong>${t}</strong><p>${x}</p></div></div>`).join('')}
+  </section>`;
+}
+function formDadosContrato(p, corrigir) {
+  const M = MODELOS.salao, d = Object.assign({ locNome: p.dados.solicitante }, p.dados);
+  return `<div class="bloco"><b>${corrigir ? 'Corrija os dados do contrato' : 'Sua data foi aprovada! Agora envie os dados para o contrato'}</b>
+    <p class="muted">Leia antes, logo acima, “O que você precisa lembrar do contrato”. Contrato em nome de: <b>${esc(d.pessoa)}</b>.</p>
+    ${corrigir && p.pendencias ? `<p class="alerta">A Secretaria pediu: ${esc(p.pendencias)}</p>` : ''}
+    ${d.pessoa === 'Pessoa Jurídica' ? '<p class="muted"><b>Empresa</b></p>' : ''}
+    ${camposContrato(M, d).map(c => (c.k === 'repNome' ? '<p class="muted" style="margin-top:14px"><b>Representante legal (quem assina)</b></p>' : '') + campoHTML(c, d[c.k], 'ct')).join('')}
+    <div class="actions"><button class="btn" data-acao="salaoDadosContrato">${corrigir ? 'Reenviar dados corrigidos' : 'Enviar dados para o contrato'}</button></div></div>`;
+}
+/* ---- Salão: contrato completo preenchido (modelo oficial) ---- */
+function contratoHTML(p) {
+  const d = p.dados, L = CONFIG.locadora;
+  const f = v => v ? `<b>${esc(v)}</b>` : '____________________';
+  const pj = d.pessoa === 'Pessoa Jurídica';
+  const locatario = pj
+    ? `a empresa ${f(d.empresa)}, inscrita no CNPJ sob nº ${f(d.cnpj)}, estabelecida em ${f(d.enderecoEmpresa)}, neste ato representada por ${f(d.repNome)}, na função de ${f(d.repFuncao)}, ${f(d.repEstadoCivil)}, portador(a) do CPF nº ${f(d.repCpf)} e RG nº ${f(d.repRg)}, residente e domiciliado(a) em ${f(d.repEndereco)}`
+    : `${f(d.locNome)}, ${f(d.nacionalidade)}, ${f(d.estadoCivil)}, ${f(d.profissao)}, portador(a) do CPF nº ${f(d.cpf)} e RG nº ${f(d.rg)}, residente e domiciliado(a) em ${f(d.endereco)}`;
+  const quando = (dt, h) => dt ? `${f(dataBR(dt))}, às ${f(h)}` : f('');
+  const assinaLoc = pj ? `${esc(d.empresa || '')}<br>${esc(d.repNome || '')}` : esc(d.locNome || '');
+  const C = (n, t) => `<p><b>CLÁUSULA ${n}ª</b> – ${t}</p>`;
+  const H = t => `<h3>${t}</h3>`;
+  return `
+  <h2 style="text-align:center">CONTRATO DE LOCAÇÃO DO SALÃO DE FESTAS<br>DA PARÓQUIA SÃO SEBASTIÃO – ANITÁPOLIS</h2>
+  <p style="text-align:right;font-size:12px">Protocolo ${esc(p.protocolo)}</p>
+  <p>Pelo presente instrumento particular, de um lado, como LOCADORA ${L.nome}, também designada de ${L.fantasia}, pessoa jurídica inscrita no CNPJ sob nº ${L.cnpj}, com personalidade jurídica especial, de natureza eclesiástica, de direito privado, que tem seus Estatutos corporificados no Código de Direito Canônico, civilmente reconhecido por força do Decreto 119-A, de 07 de janeiro de 1890, estabelecida na ${L.endereco}, neste ato representada pelo seu pároco ${L.paroco}, ${L.parocoQualif}, portador do RG nº ${L.parocoRg || '____________'}, do CPF nº ${L.parocoCpf || '____________'}; e, de outro lado, como LOCATÁRIO(A), ${locatario}, têm entre si justo e acertado o presente CONTRATO DE LOCAÇÃO DO SALÃO PAROQUIAL, mediante as cláusulas e condições seguintes:</p>
+  ${H('DO OBJETO DO CONTRATO')}
+  ${C(1, `O objeto do presente instrumento é o aluguel do salão de festas, ${esc(d.salao)}, situado na ${f(CONFIG.enderecoSalao[d.salao])}, Cidade de Anitápolis, no Estado de Santa Catarina, de propriedade da LOCADORA.`)}
+  <p>Parágrafo único – O espaço será utilizado exclusivamente para a realização do evento ${f(d.evento)}, na data de ${f(dataBR(d.data))}.</p>
+  ${H('DA DESCRIÇÃO DO IMÓVEL')}
+  ${C(2, 'O imóvel objeto deste contrato será entregue em condições de uso, com instalações elétricas e hidráulicas em funcionamento, e estrutura apta ao evento pretendido.')}
+  <p>Parágrafo único – A locação do espaço será acompanhada de equipamentos e utensílios, conforme inventário anexo, havendo obrigação do LOCATÁRIO de conservar também ditos objetos, devolvendo-os na mesma quantidade e condições de uso em que os recebeu.</p>
+  ${H('DO USO DO IMÓVEL')}
+  ${C(3, `O LOCATÁRIO poderá utilizar o imóvel no período compreendido entre a vistoria inicial e entrega das chaves, em ${quando(d.chaveRet, d.chaveRetHora)}, e a devolução das chaves e vistoria final, em ${quando(d.chaveDev, d.chaveDevHora)}. A realização do evento ocorrerá em ${f(dataBR(d.data))}.`)}
+  <p>Parágrafo único – É vedado ao LOCATÁRIO a realização de quaisquer benfeitorias ou construções no objeto do presente contrato.</p>
+  ${H('DO VALOR A SER PAGO')}
+  ${C(4, `Pela locação, o LOCATÁRIO pagará à LOCADORA o valor fixo de ${d.valorBase ? f(reais(d.valorBase)) + ' (' + esc(porExtenso(d.valorBase)) + ')' : 'R$ ____________ (________________)'}, acrescido dos valores da energia elétrica e do gás efetivamente consumidos durante o período da locação. O valor fixo será pago em ${f(dataBR(d.pagData))}, por ${f(d.pagForma)}.`)}
+  <p>§ 1º – Na vistoria inicial, realizada no momento da entrega das chaves, serão registrados, em termo de vistoria assinado pelas partes, a leitura inicial do medidor de energia elétrica e a medição ou quantidade inicial de gás disponível.</p>
+  <p>§ 2º – Na vistoria final, realizada no momento da devolução das chaves, serão registrados, no mesmo termo, a leitura final do medidor de energia elétrica e a medição ou quantidade final de gás.</p>
+  <p>§ 3º – O consumo de energia elétrica será calculado pela diferença entre as leituras final e inicial, multiplicada pela tarifa unitária aplicável, previamente informada ao LOCATÁRIO. O consumo de gás será calculado pela diferença entre as quantidades inicial e final, multiplicada pelo preço unitário previamente informado ao LOCATÁRIO. A forma de medir o gás e as unidades utilizadas deverão constar no termo de vistoria.</p>
+  <p>§ 4º – O demonstrativo dos cálculos e os valores apurados serão apresentados ao LOCATÁRIO para conferência. O pagamento dos consumos ocorrerá ${f(d.prazoConsumos)}.</p>
+  <p>§ 5º – O LOCATÁRIO, incorrendo em mora, será responsável pelos juros de mora estipulado em 1% ao mês sobre o valor do contrato, como também pelo pagamento de multa estabelecida em 2% sobre o mesmo valor, com correção monetária aplicando-se o índice IGPM/FGV.</p>
+  ${H('DAS OBRIGAÇÕES DA LOCADORA')}
+  ${C(5, 'A LOCADORA deverá realizar a vistoria inicial e entregar as chaves ao LOCATÁRIO na data e horário estipulados na Cláusula 3ª, após a assinatura deste contrato.')}
+  ${C(6, 'A LOCADORA se obriga a entregar ao LOCATÁRIO o imóvel em perfeitas condições de uso, e em conformidade com a sua finalidade, como também garantir o uso pacífico deste durante o tempo de vigência deste contrato.')}
+  ${C(7, 'Correrão por conta do LOCATÁRIO as despesas de energia elétrica e gás efetivamente consumidos durante o período da locação, apuradas na forma da Cláusula 4ª. Permanecerão a cargo da LOCADORA as despesas ordinárias de água e esgoto, bem como as taxas e os impostos incidentes sobre o imóvel, ressalvadas as licenças, taxas e tributos relacionados especificamente ao evento, que são de responsabilidade do LOCATÁRIO, conforme a Cláusula 13ª.')}
+  ${C(8, 'No período da preparação do evento a LOCADORA indicará pessoa de sua confiança que acompanhará os preparativos do evento para solucionar possíveis emergências.')}
+  ${C(9, 'Caso a locação tenha que ser cancelada por motivos de caso fortuito ou força maior, como a intervenção pública no imóvel, necessidade urgente de manutenção, ou outros motivos alheios à vontade da LOCADORA, não haverá responsabilidade desta, devendo os valores serem devolvidos, mas não cabendo qualquer tipo de indenização ao LOCATÁRIO.')}
+  ${H('DAS OBRIGAÇÕES DO LOCATÁRIO')}
+  ${C(10, 'O LOCATÁRIO é obrigado a pagar o aluguel e cumprir com os encargos da locação, nos termos ajustados.')}
+  ${C(11, 'O LOCATÁRIO será totalmente responsável pela guarda e manutenção do imóvel, desde a entrega das chaves pela LOCADORA, até a devolução das mesmas, devendo administrar, cuidar da limpeza, da ordem e da conservação do imóvel, entregando-o nas mesmas condições em que recebeu, bem como acompanhado de todos os equipamentos e utensílios relacionados no inventário anexo.')}
+  <p>Parágrafo único – Havendo dano de qualquer natureza, feito pelo LOCATÁRIO, ou por seus dependentes, prepostos, familiares, visitantes ou convidados, deverá o mesmo arcar com as despesas necessárias à reparação do mesmo, ou indenização equivalente, salvo as deteriorações decorrentes do seu uso normal.</p>
+  ${C(12, 'O LOCATÁRIO exime a LOCADORA de toda a responsabilidade do evento, de modo que as pessoas envolvidas em trabalhos de preparação e realização do evento não podem responsabilizar a LOCADORA por nenhum acidente, ou exigir nenhuma indenização.')}
+  ${C(13, 'Eventuais licenças, taxas, ou tributos de qualquer natureza que incidam sobre a realização do evento são de total responsabilidade do LOCATÁRIO, de forma que a LOCADORA não possa ser questionada nem mesmo como devedora solidária de taxas tais. (Exemplos: licenças municipais para a realização do evento, taxa de Segurança na Delegacia local, etc).')}
+  <p>§ 1º – Se houver aluguel de equipamentos de som ou outros a LOCADORA deverá ficar totalmente eximida de responsabilidade pelo pagamento do mesmo ou por possíveis danos.</p>
+  <p>§ 2º – É de responsabilidade do LOCATÁRIO o recolhimento de todos os encargos trabalhistas e previdenciários decorrentes da contratação de pessoal utilizado no evento, bem como dos tributos decorrentes da atividade, quando aplicável.</p>
+  <p>§ 3º – É responsabilidade do LOCATÁRIO o recolhimento, junto ao ECAD, das taxas decorrentes da execução musical pública, em qualquer de suas modalidades, não se eximindo do pagamento do preço do contrato na hipótese de não realização do evento por impedimento daquele órgão (ECAD).</p>
+  ${C(14, 'É de responsabilidade do LOCATÁRIO a utilização do salão respeitando o sossego e a paz da vizinhança, conforme disposição da Lei, não sendo permitido que o barulho/música, bem como que outros fatos proveniente dos eventos incomodem os moradores dos imóveis vizinhos ou mesmo de pedestres e transeuntes.')}
+  <p>Parágrafo único – Em não sendo respeitadas as disposições desta cláusula o LOCATÁRIO arcará com as responsabilidades civis nas penas da Lei, bem como vale advertir que perturbação do sossego pode gerar responsabilização na esfera criminal, conforme a Lei de Contravenções Penais, não obstante a LOCADORA poderá exigir o valor da multa prevista na Cláusula 21ª.</p>
+  ${C(15, 'O LOCATÁRIO providenciará a segurança necessária para a realização do evento, de modo que a LOCADORA não poderá ser responsabilizada por eventuais desordens, desentendimentos ou agressões que acontecerem nas dependências do salão locado, além de arcar com o seguro de incêndio, com o mesmo fim.')}
+  <p>Parágrafo único – O LOCATÁRIO exime a LOCADORA de quaisquer responsabilidades ou indenizações por roubos de veículos e/ou furtos de quaisquer pertences deixados no interior do imóvel locado, obrigando-se o LOCATÁRIO a manter pessoal responsável pela segurança.</p>
+  ${C(16, 'É vedado ao LOCATÁRIO a troca do segredo das fechaduras. A ocorrência de qualquer evento que torne necessária a troca de tal segredo deverá ser imediatamente comunicado à LOCADORA, cuja autorização expressa é imprescindível para que se efetue aludida troca de segredo.')}
+  ${H('DO PRAZO E DEVOLUÇÃO DO IMÓVEL')}
+  ${C(17, 'A presente locação terá validade durante o período estipulado neste contrato, devendo o imóvel ser devolvido à LOCADORA ao término desse período, completamente desocupado, inclusive dos equipamentos utilizados para a realização do evento, juntamente com as respectivas chaves, mediante vistoria final.')}
+  ${H('CONDIÇÕES GERAIS')}
+  ${C(18, 'O LOCATÁRIO não poderá, sem expressa autorização da LOCADORA, emprestar ou sublocar o imóvel, bem como os móveis que lhe guarnecem, a terceiros.')}
+  ${C(19, 'O presente contrato obriga não só as partes, mas também os seus herdeiros e testemunhas, a qualquer título e grau.')}
+  ${C(20, 'O cancelamento do evento, por iniciativa do LOCATÁRIO, não o exime do pagamento integral do preço ajustado, salvo por liberalidade da LOCADORA.')}
+  ${C(21, 'A infração de qualquer das cláusulas do presente contrato, sujeita o infrator à multa de uma vez o valor do aluguel, tomando-se por base, o expresso na Cláusula 4ª.')}
+  ${C(22, 'A não exigência pela LOCADORA de qualquer dos valores ou obrigações previstas neste contrato, devem ser entendidas como mera liberalidade, permanecendo hígida a validade das suas cláusulas.')}
+  ${H('DO FORO')}
+  ${C(23, 'Para dirimir dúvidas ou questões que porventura possam decorrer deste contrato, as partes elegem o foro da Comarca Santo Amaro-SC.')}
+  <p>E, por estarem assim justos e contratados, assinam o presente em ${CONFIG.viasContrato} (${porExtenso(CONFIG.viasContrato).replace(/ reais?$/, '').replace('dois', 'duas')}) vias, perante duas testemunhas.</p>
+  <p>Anitápolis/SC, ______ de ____________________ de ________.</p>
+  <table style="width:100%;margin-top:40px;text-align:center"><tr>
+    <td style="width:50%">______________________________<br>LOCADORA<br>Paróquia São Sebastião<br>${L.paroco}</td>
+    <td>______________________________<br>LOCATÁRIO(A)<br>${assinaLoc}</td></tr></table>
+  <p style="margin-top:30px">TESTEMUNHAS:</p>
+  <p>1. Nome: ______________________________ CPF: ________________ Assinatura: ________________</p>
+  <p>2. Nome: ______________________________ CPF: ________________ Assinatura: ________________</p>
+  <div style="page-break-before:always"></div>
+  <h2 style="text-align:center">TERMO DE VISTORIA — ENERGIA ELÉTRICA E GÁS</h2>
+  <p>Protocolo ${esc(p.protocolo)} · ${esc(d.salao)} · Evento em ${dataBR(d.data)} · Locatário(a): ${pj ? esc(d.empresa || '') : esc(d.locNome || '')}</p>
+  <table border="1" cellpadding="8" style="border-collapse:collapse;width:100%">
+    <tr><th></th><th>Vistoria inicial (entrega das chaves)<br><small>${d.chaveRet ? dataBR(d.chaveRet) + ' ' + esc(d.chaveRetHora) : ''}</small></th><th>Vistoria final (devolução)<br><small>${d.chaveDev ? dataBR(d.chaveDev) + ' ' + esc(d.chaveDevHora) : ''}</small></th><th>Consumo</th><th>Tarifa / preço unitário</th><th>Valor</th></tr>
+    <tr><td><b>Energia (kWh)</b></td><td>${esc(d.luzIni || '')}</td><td>${esc(d.luzFim || '')}</td><td></td><td></td><td></td></tr>
+    <tr><td><b>Gás</b><br><small>unidade: ________</small></td><td>${esc(d.gasIni || '')}</td><td>${esc(d.gasFim || '')}</td><td></td><td></td><td></td></tr>
+    <tr><td colspan="5" align="right"><b>Total dos consumos</b></td><td></td></tr></table>
+  <p>Estado do salão, equipamentos e utensílios (conforme inventário): ____________________________________________<br>______________________________________________________________________________</p>
+  <table style="width:100%;margin-top:40px;text-align:center"><tr><td>______________________________<br>LOCADORA</td><td>______________________________<br>LOCATÁRIO(A)</td></tr></table>`;
+}
+
 function telaProcesso() {
   const p = procPorId(estado.proc);
   if (!p || !processosVisiveis().includes(p)) { estado.proc = null; return telaProcessos(); }
@@ -818,7 +1012,10 @@ function telaProcesso() {
     .map(c => `<div><span class="muted">${esc(c.rot)}:</span> ${c.tipo === 'date' ? dataBR(p.dados[c.k]) : esc(p.dados[c.k])}</div>`).join('');
 
   let avancar = '';
-  if (prox && !p.alt) {
+  const corrigirContrato = p.modelo === 'salao' && p.alt === 'Devolvida para ajustes' && p.etapa === 3 && (sec || (pessoaAtual() && p.origem === pessoaAtual().id));
+  if (corrigirContrato) avancar = formDadosContrato(p, true);
+  else if (prox && !p.alt && prox.dadosContrato && podeConduzir(p, p.etapa + 1)) avancar = formDadosContrato(p, false);
+  else if (prox && !p.alt) {
     if (podeConduzir(p, p.etapa + 1)) {
       const bloqueioDocs = prox.gateDocs && docsPendentes(p).length;
       avancar = `<div class="bloco"><b>Próxima etapa: ${esc(prox.n)}</b>
@@ -832,7 +1029,7 @@ function telaProcesso() {
       avancar = `<p class="muted">Próxima etapa (“${esc(prox.n)}”) é de competência ${prox.quem === 'paroco' ? 'do pároco' : 'da Secretaria ou da coordenação da comunidade'}.</p>`;
     }
   }
-  const podeAlt = !procEncerrado(p) && (podeConduzir(p, Math.max(1, p.etapa)) || podeConduzir(p, p.etapa + 1));
+  const podeAlt = !procEncerrado(p) && (sec || temFuncao('lideranca')) && (podeConduzir(p, Math.max(1, p.etapa)) || podeConduzir(p, p.etapa + 1));
   const alt = !podeAlt ? '' : p.alt ? `<div class="actions"><button class="btn blue" data-acao="procRetomar">Retomar processo na etapa “${esc(M.etapas[p.etapa].n)}”</button></div>` : `
     <details><summary>Registrar situação alternativa</summary>
       <label for="alt-sel">Situação</label><select id="alt-sel">${M.alt.map(a => `<option>${esc(a)}</option>`).join('')}</select>
@@ -858,13 +1055,16 @@ function telaProcesso() {
       ${p.modelo === 'certidao' && p.dados.finalidade === 'Sim' ? '<p class="alerta">Finalidade: casamento — usar modelo específico e conferência especial. Sem download automático.</p>' : ''}
       ${p.prazo && !procEncerrado(p) ? `<p><b>Prazo:</b> ${dataBR(p.prazo)} (${CONFIG.prazoCertidaoDiasUteis} dias úteis após dados completos; feriados não descontados)</p>` : ''}
       ${p.modelo === 'salao' ? `<p><b>${reservaConfirmada(p) ? '✅ Reserva confirmada' : procEncerrado(p) && !p.alt ? 'Contrato encerrado' : '⏳ Ainda NÃO é reserva confirmada'}</b></p>` : ''}
+      ${p.modelo === 'salao' && p.coordOk && p.etapa < 2 ? '<p><span class="tag ok">Coordenação da comunidade: de acordo com o uso</span></p>' : ''}
       ${conflitos.length ? `<div class="alerta"><b>Conflito de horário</b> com: ${conflitos.map(o => `${esc(o.protocolo)} (${esc(o.dados.inicio)}–${esc(o.dados.fim)}, ${esc(situacaoProc(o))})`).join('; ')}</div>` : ''}
       ${barraProgresso(p)}
     </section>
+    ${p.modelo === 'salao' && p.etapa >= 2 && !(p.alt && ALT_ENCERRA.includes(p.alt)) && !procEncerrado(p) ? lembretesContrato(p) : ''}
     ${avancar || alt ? `<section class="card"><h3>Conduzir processo</h3>${avancar}${alt}</section>` : ''}
     ${docs}
     <section class="card"><h3>Dados do pedido</h3>${linhas}${extras}
-      ${p.modelo === 'salao' && sec && p.etapa >= 2 ? '<div class="actions"><button class="btn outline" data-acao="procImprimir">Imprimir dados para o contrato</button></div><p class="muted">Contrato físico, no modelo oficial da Paróquia. Não há assinatura eletrônica.</p>' : ''}
+      ${p.modelo === 'salao' && sec && p.etapa >= 3 ? '<div class="actions"><button class="btn outline" data-acao="procImprimir">Imprimir contrato preenchido</button></div><p class="muted">Contrato físico, no modelo oficial da Paróquia (com termo de vistoria de luz e gás). Assinatura presencial; não há assinatura eletrônica.</p>' : ''}
+      ${p.modelo === 'salao' && sec && p.etapa === 2 ? '<p class="muted">O contrato poderá ser impresso quando o locatário enviar os dados pelo aplicativo (ou a Secretaria preencher por ele).</p>' : ''}
     </section>
     ${sec && (p.comunicar || p.alt) ? `<section class="card"><p class="alerta">Há decisão ou pendência a comunicar ao solicitante.</p><div class="actions"><button class="btn small outline" data-acao="marcarComunicado">Comunicado por telefone/presencialmente</button></div></section>` : ''}
     ${sec ? blocoWhats({ alvo: p, id: 'proc-' + p.id, tel: p.dados.telefone, consente: p.dados.consente, texto: mensagemProc(p, chave), seletor }) : ''}
@@ -1202,7 +1402,7 @@ const linhaEvento = e => `<div class="item"><div style="display:flex;gap:11px;al
   ${e.tipo !== 'pública' ? `<span class="tag ${e.tipo === 'reserva confirmada' ? 'ok' : ''}">${esc(e.tipo)}</span>` : ''}</div>`;
 function telaAgenda() {
   const futuros = eventosAgenda(!pessoaAtual()).filter(e => e.data >= hojeISO());
-  const pendentesSalao = pessoaAtual() && verReservada() ? dados.processos.filter(p => p.modelo === 'salao' && !p.alt && p.etapa < 5) : [];
+  const pendentesSalao = pessoaAtual() && verReservada() ? dados.processos.filter(p => p.modelo === 'salao' && !p.alt && p.etapa < ETAPA_CONFIRMA_SALAO) : [];
   const tipos = TIPOS_AGENDA.filter(t => t[2] !== 'reservada' || verReservada());
   return `
     <h2 class="title">Agenda Paroquial</h2>
@@ -1373,13 +1573,15 @@ function telaSalao() {
       <button class="btn small wine" data-acao="salaoIndisp" data-id="${p.id}">Data indisponível</button></div>` : ''}</div></div>`;
   };
   const analise = lista.filter(p => !p.alt && p.etapa <= 1);
-  const aprovados = lista.filter(p => !p.alt && p.etapa >= 2 && p.etapa < 5);
+  const analiseCoord = analise.filter(p => !p.coordOk), analiseSec = analise.filter(p => p.coordOk);
+  const aprovados = lista.filter(p => !p.alt && p.etapa >= 2 && p.etapa < ETAPA_CONFIRMA_SALAO);
   const confirmadas = lista.filter(p => reservaConfirmada(p) && !procEncerrado(p));
   return `
     <h2 class="title">Uso do salão</h2>
     <div class="muted">${esc(pessoaAtual().comunidade)} · A coordenação decide sobre o uso do espaço da sua comunidade. Contrato, assinatura e chaves seguem com a Secretaria.</div>
-    <section class="card"><h3>Aguardando análise da coordenação</h3>${analise.map(p => card(p, true)).join('') || '<p class="muted">Nenhum pedido aguardando.</p>'}</section>
-    <section class="card"><h3>Aprovados, aguardando contrato na Secretaria</h3>${aprovados.map(p => card(p)).join('') || '<p class="muted">Nenhum.</p>'}</section>
+    <section class="card"><h3>Aguardando análise da coordenação</h3>${analiseCoord.map(p => card(p, true)).join('') || '<p class="muted">Nenhum pedido aguardando.</p>'}</section>
+    ${analiseSec.length ? `<section class="card"><h3>Coordenação de acordo — aguardando aprovação da Secretaria</h3>${analiseSec.map(p => card(p)).join('')}</section>` : ''}
+    <section class="card"><h3>Data aprovada, contrato em andamento na Secretaria</h3>${aprovados.map(p => card(p)).join('') || '<p class="muted">Nenhum.</p>'}</section>
     <section class="card"><h3>Reservas confirmadas</h3>${confirmadas.map(p => card(p)).join('') || '<p class="muted">Nenhuma.</p>'}</section>`;
 }
 
@@ -1493,10 +1695,16 @@ const ACOES = {
   procEnviar(d) {
     const M = MODELOS[d.modelo];
     const rasc = Object.assign({}, estado.rascunho, lerCampos(M.campos));
-    const campos = camposAtivos(M, rasc);
+    const campos = camposPedido(M, rasc);
     const falta = campos.filter(c => c.obrig && !rasc[c.k]);
     if (falta.length) return alert('Preencha: ' + falta.map(c => c.rot).join(', ') + '.');
-    if (d.modelo === 'salao' && minutos(rasc.fim) <= minutos(rasc.inicio)) return alert('O término deve ser depois do início.');
+    if (d.modelo === 'salao') {
+      if (minutos(rasc.fim) <= minutos(rasc.inicio)) return alert('O término do evento deve ser depois do início.');
+      const ret = rasc.chaveRet + 'T' + rasc.chaveRetHora, dev = rasc.chaveDev + 'T' + rasc.chaveDevHora;
+      if (ret > rasc.data + 'T' + rasc.inicio) return alert('A retirada da chave deve ser antes do início do evento.');
+      if (dev < rasc.data + 'T' + rasc.fim) return alert('A devolução da chave deve ser depois do término do evento.');
+      if (rasc.data < hojeISO()) return alert('A data do evento já passou.');
+    }
     if (rasc.telefone && !telefoneWa(rasc.telefone) && !confirm('O telefone parece inválido para WhatsApp. Enviar assim mesmo?')) return;
     const dadosP = {}; campos.forEach(c => { dadosP[c.k] = rasc[c.k]; });
     const p = { id: proximoId(dados.processos), protocolo: novoProtocolo(), modelo: d.modelo, origem: pessoaAtual() ? pessoaAtual().id : null,
@@ -1540,33 +1748,47 @@ const ACOES = {
   },
   procRetomar() { const p = procPorId(estado.proc); historico(p, 'Processo retomado', 'Saiu de: ' + p.alt); p.alt = null; p.pendencias = ''; estado.msgAberta = null; ir('Processo retomado.'); },
   procImprimir() {
-    const p = procPorId(estado.proc); const M = MODELOS[p.modelo];
+    const p = procPorId(estado.proc);
     const w = window.open('', '_blank');
     if (!w) return alert('Permita janelas pop-up para imprimir.');
-    w.document.write(`<!doctype html><meta charset="utf-8"><title>Dados para contrato ${esc(p.protocolo)}</title><body style="font:14px Georgia,serif;padding:24px">
-      <h2>Paróquia São Sebastião — dados para contrato de locação</h2><p>Protocolo ${esc(p.protocolo)} · preencher no modelo oficial · assinatura presencial</p>
-      <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%">${camposAtivos(M, p.dados).filter(c => c.tipo !== 'check')
-        .map(c => `<tr><th align="left" style="width:40%">${esc(c.rot)}</th><td>${c.tipo === 'date' ? dataBR(p.dados[c.k]) : esc(p.dados[c.k] || '')}</td></tr>`).join('')}</table>
-      <p>Luz consumida: ________ &nbsp; Gás consumido: ________</p><script>print()<\/script></body>`);
+    w.document.write(`<!doctype html><meta charset="utf-8"><title>Contrato ${esc(p.protocolo)}</title>
+      <style>body{font:13.5px/1.5 Georgia,serif;padding:28px;max-width:780px;margin:auto;text-align:justify}h3{font-size:13.5px;margin:16px 0 4px;text-align:center}p{margin:6px 0}@media print{body{padding:0}}</style>
+      <body>${contratoHTML(p)}<script>print()<\/script></body>`);
     w.document.close();
-    historico(p, 'Dados para contrato impressos'); salvar();
+    historico(p, 'Contrato preenchido impresso'); salvar();
+  },
+  salaoDadosContrato() {
+    const p = procPorId(estado.proc); const M = MODELOS.salao;
+    const corrigir = p.alt === 'Devolvida para ajustes' && p.etapa === 3;
+    if (!corrigir && !(p.etapa === 2 && !p.alt && podeConduzir(p, 3))) return alert('Este formulário não está liberado.');
+    const campos = camposContrato(M, p.dados);
+    const v = lerCampos(campos, 'ct');
+    const falta = campos.filter(c => c.obrig && !v[c.k]);
+    if (falta.length) return alert('Preencha: ' + falta.map(c => c.rot).join(', ') + '.');
+    const inval = campos.filter(c => (c.valida === 'cpf' && !validaCPF(v[c.k])) || (c.valida === 'cnpj' && !validaCNPJ(v[c.k])));
+    if (inval.length) return alert('Confira: ' + inval.map(c => c.rot).join(', ') + ' (número inválido).');
+    Object.assign(p.dados, v);
+    if (corrigir) { historico(p, 'Dados do contrato corrigidos pelo locatário'); p.alt = null; p.pendencias = ''; }
+    else { p.etapa = 3; historico(p, M.etapas[3].n); }
+    p.comunicar = false;
+    ir('Dados enviados. A Secretaria vai conferir e preparar o contrato para assinatura presencial.');
   },
 
   // Uso do salão (coordenação)
   salaoAprovar(d) {
     const p = procPorId(Number(d.id));
-    if (!p || !podeConduzir(p, 2)) return alert('Sem competência para esta decisão.');
+    if (!p || !podeConduzir(p, 1)) return alert('Sem competência para esta decisão.');
     const c = conflitosSalao(p);
     if (c.some(reservaConfirmada)) return alert('Já existe reserva CONFIRMADA neste horário. Marque “Data indisponível”.');
     if (c.length && !confirm('Há outro pedido em análise para o mesmo horário. Aprovar mesmo assim?')) return;
     const obs = valor('sal-obs-' + p.id);
     if (p.etapa === 0) { p.etapa = 1; historico(p, MODELOS.salao.etapas[1].n); }
-    p.etapa = 2; historico(p, MODELOS.salao.etapas[2].n, obs); p.comunicar = true;
-    ir('Uso aprovado. A Secretaria segue com o contrato e comunica o solicitante.');
+    p.coordOk = true; historico(p, 'Coordenação de acordo com o uso do espaço', obs);
+    ir('Registrado. A Secretaria confere, aprova a data e libera o formulário do contrato ao solicitante.');
   },
   salaoIndisp(d) {
     const p = procPorId(Number(d.id));
-    if (!p || !podeConduzir(p, 2)) return alert('Sem competência para esta decisão.');
+    if (!p || !podeConduzir(p, 1)) return alert('Sem competência para esta decisão.');
     const obs = valor('sal-obs-' + p.id);
     if (!obs) return alert('Informe o motivo.');
     p.alt = 'Data indisponível'; p.pendencias = obs; historico(p, 'Situação: Data indisponível', obs); p.comunicar = true;
