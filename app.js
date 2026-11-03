@@ -231,7 +231,7 @@ const MODELOS = {
 
   salao: {
     nome: 'Reserva / locação de salão', icone: '🏛️',
-    ajuda: 'Primeiro você pede a data e os horários das chaves. A Secretaria confere; aprovando, o app libera o formulário com os dados do contrato e os pontos principais que você precisa saber. A reserva só é confirmada após o contrato assinado presencialmente.',
+    ajuda: 'Primeiro você pede a data e os horários das chaves. A Secretaria confere; aprovando, o app libera o formulário com os dados do contrato. Depois você recebe o contrato completo aqui no app para ler e confirmar antes de assinar. A reserva só é confirmada após o contrato assinado presencialmente.',
     campos: [
       // ---- Fase 1: pedido (data e chaves) ----
       { k: 'pessoa', rot: 'O contrato será em nome de', tipo: 'select', ops: ['Pessoa Física', 'Pessoa Jurídica'], obrig: true, recarrega: true },
@@ -279,8 +279,9 @@ const MODELOS = {
         { k: 'pagForma', rot: 'Forma de pagamento', tipo: 'select', ops: ['PIX', 'Dinheiro', 'Transferência bancária', 'Boleto'], obrig: true },
         { k: 'prazoConsumos', rot: 'Prazo para pagar luz e gás', obrig: true, padrao: 'até 5 (cinco) dias após a vistoria final' }] },
       { n: 'Dados do contrato enviados pelo locatário', quem: 'locatario', dadosContrato: true },
-      { n: 'Dados conferidos — contrato gerado e impresso', quem: 'sec' },
-      { n: 'Aguardando assinatura presencial', quem: 'sec' },
+      { n: 'Contrato conferido e enviado pelo app para leitura', quem: 'sec', enviaContrato: true, msg: 'contrato' },
+      { n: 'Contrato lido — locatário de acordo', quem: 'locatario', leituraContrato: true },
+      { n: 'Contrato impresso — aguardando assinatura presencial', quem: 'sec', msg: 'assinatura' },
       { n: 'Contrato assinado — reserva CONFIRMADA', quem: 'sec', msg: 'confirmacao', confirma: true },
       { n: 'Vistoria inicial e chaves entregues', quem: 'sec', pede: [
         { k: 'chavesPara', rot: 'Chaves entregues a (nome)', obrig: true },
@@ -297,6 +298,8 @@ const MODELOS = {
     msgs: {
       recebimento: 'Olá, {nome}! Recebemos seu pedido de reserva do {salao} para {data}, das {inicio} às {fim}, protocolo {protocolo}. Chave: retirada {ret} e devolução {dev}. O pedido ainda depende de análise.',
       liberado: 'Olá, {nome}! A data {data} no {salao} foi aprovada pela Secretaria (protocolo {protocolo}). Agora, pelo aplicativo, envie os dados para o contrato e leia os pontos principais. Valor fixo: {valor}, mais luz e gás consumidos. A reserva só fica confirmada após a assinatura presencial do contrato.',
+      contrato: 'Olá, {nome}! Seu contrato de locação do {salao} (evento em {data}, protocolo {protocolo}) já está no aplicativo para leitura. Leia com calma e confirme a leitura no app; se encontrar algum erro, peça a correção por lá mesmo. A assinatura será presencial na Secretaria.',
+      assinatura: 'Olá, {nome}! Seu contrato de locação do {salao} (protocolo {protocolo}) está impresso e pronto para assinatura presencial na Secretaria. Traga documento com foto. A reserva só fica confirmada após a assinatura.',
       confirmacao: 'Olá, {nome}! Sua reserva do {salao} está CONFIRMADA para {data}, das {inicio} às {fim}, para {finalidade}. Protocolo {protocolo}. Retirada da chave e vistoria inicial: {ret}. Devolução da chave e vistoria final: {dev}. Paróquia São Sebastião.',
       pendencia: 'Olá, {nome}! Para concluir sua reserva do {salao}, precisamos de {pendencias}. A data ainda não está confirmada.',
       cancelamento: 'Olá, {nome}! Informamos que a reserva {protocolo}, referente ao {salao} em {data}, foi cancelada conforme registro do processo. Entre em contato com a Secretaria para orientações.'
@@ -453,7 +456,13 @@ function seed() {
     solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004', consente: true,
     valorBase: 800, pagData: '2026-11-07', pagForma: 'PIX', prazoConsumos: 'até 5 (cinco) dias após a vistoria final',
     locNome: 'Ana Exemplo da Silva', nacionalidade: 'brasileira', estadoCivil: 'solteiro(a)', profissao: 'professora', cpf: '111.444.777-35', rg: '0.000.000 SSP/SC',
-    endereco: 'Rua Exemplo, 100, Centro, Anitápolis/SC, CEP 88.475-000', ciente: true }, 6, '2026-10-01T12:00:00.000Z'));
+    endereco: 'Rua Exemplo, 100, Centro, Anitápolis/SC, CEP 88.475-000', ciente: true }, 7, '2026-10-01T12:00:00.000Z', { contratoVersao: 1, contratoEnviadoEm: '2026-10-05T13:00:00.000Z' }));
+  d.processos.push(proc(7, '2026-0009', 'salao', 4, { pessoa: 'Pessoa Física', salao: 'Salão Paroquial (Matriz)', evento: 'Batizado — almoço (exemplo)',
+    data: '2026-12-06', inicio: '11:00', fim: '17:00', publico: 50, chaveRet: '2026-12-05', chaveRetHora: '16:00', chaveDev: '2026-12-07', chaveDevHora: '09:00',
+    solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004', consente: true,
+    valorBase: 450, pagData: '2026-11-28', pagForma: 'PIX', prazoConsumos: 'até 5 (cinco) dias após a vistoria final',
+    locNome: 'Ana Exemplo da Silva', nacionalidade: 'brasileira', estadoCivil: 'casado(a)', profissao: 'professora', cpf: '111.444.777-35', rg: '0.000.000 SSP/SC',
+    endereco: 'Rua Exemplo, 100, Centro, Anitápolis/SC, CEP 88.475-000', ciente: true }, 4, '2026-10-20T12:00:00.000Z', { contratoVersao: 1, contratoEnviadoEm: '2026-11-02T13:00:00.000Z' }));
   d.processos.push(proc(6, '2026-0008', 'salao', 4, { pessoa: 'Pessoa Jurídica', salao: 'Salão Paroquial (Matriz)', evento: 'Confraternização de empresa (exemplo)',
     data: '2026-12-12', inicio: '20:00', fim: '23:00', publico: 40, chaveRet: '2026-12-12', chaveRetHora: '14:00', chaveDev: '2026-12-13', chaveDevHora: '09:00',
     solicitante: 'Ana Exemplo', telefone: '(48) 90000-0004', consente: true,
@@ -462,7 +471,7 @@ function seed() {
 }
 
 /* ================= ESTADO ================= */
-const CHAVE = 'minha-paroquia-demo-v8';
+const CHAVE = 'minha-paroquia-demo-v9';
 let dados;
 try { dados = JSON.parse(localStorage.getItem(CHAVE)) || seed(); } catch (e) { dados = seed(); }
 const estado = {
@@ -901,12 +910,12 @@ function lembretesContrato(p) {
     ['🔇', 'Vizinhança', 'Respeite o sossego dos vizinhos e transeuntes. Barulho excessivo pode gerar responsabilização civil e criminal, além de multa. (Cl. 14ª)'],
     ['❌', 'Cancelamento', 'Se você cancelar, o valor integral continua devido (salvo liberalidade da Paróquia). Se a Paróquia precisar cancelar por força maior, os valores são devolvidos, sem indenização. (Cl. 9ª e 20ª)'],
     ['⚖️', 'Multa por infração', 'Descumprir qualquer cláusula gera multa de uma vez o valor do aluguel. (Cl. 21ª)'],
-    ['✍️', 'Confirmação', 'A reserva só é confirmada com o contrato assinado <b>presencialmente</b> na Secretaria. Leve documento com foto' + (d.pessoa === 'Pessoa Jurídica' ? ', cartão CNPJ e, se não for sócio, a procuração.' : '.')]
+    ['✍️', 'Confirmação', 'Antes de assinar, você recebe aqui no app o <b>contrato completo</b> para ler e confirmar. A reserva só é confirmada com o contrato assinado <b>presencialmente</b> na Secretaria. Leve documento com foto' + (d.pessoa === 'Pessoa Jurídica' ? ', cartão CNPJ e, se não for sócio, a procuração.' : '.')]
   ];
+  const lista = itens.map(([i, t, x]) => `<div class="lembrete"><span class="ico" aria-hidden="true">${i}</span><div><strong>${t}</strong><p>${x}</p></div></div>`).join('');
+  if (p.etapa >= 4) return `<section class="card"><details><summary><b>Resumo: o que lembrar do contrato</b></summary>${lista}</details></section>`;
   return `<section class="card"><h3>O que você precisa lembrar do contrato</h3>
-    <p class="muted">Resumo dos pontos principais. O texto completo é o do contrato que será assinado na Secretaria.</p>
-    ${itens.map(([i, t, x]) => `<div class="lembrete"><span class="ico" aria-hidden="true">${i}</span><div><strong>${t}</strong><p>${x}</p></div></div>`).join('')}
-  </section>`;
+    <p class="muted">Resumo dos pontos principais. Antes de assinar, você receberá o contrato completo aqui no app.</p>${lista}</section>`;
 }
 function formDadosContrato(p, corrigir) {
   const M = MODELOS.salao, d = Object.assign({ locNome: p.dados.solicitante }, p.dados);
@@ -918,7 +927,7 @@ function formDadosContrato(p, corrigir) {
     <div class="actions"><button class="btn" data-acao="salaoDadosContrato">${corrigir ? 'Reenviar dados corrigidos' : 'Enviar dados para o contrato'}</button></div></div>`;
 }
 /* ---- Salão: contrato completo preenchido (modelo oficial) ---- */
-function contratoHTML(p) {
+function contratoHTML(p, comVistoria = true) {
   const d = p.dados, L = CONFIG.locadora;
   const f = v => v ? `<b>${esc(v)}</b>` : '____________________';
   const pj = d.pessoa === 'Pessoa Jurídica';
@@ -987,7 +996,7 @@ function contratoHTML(p) {
   <p style="margin-top:30px">TESTEMUNHAS:</p>
   <p>1. Nome: ______________________________ CPF: ________________ Assinatura: ________________</p>
   <p>2. Nome: ______________________________ CPF: ________________ Assinatura: ________________</p>
-  <div style="page-break-before:always"></div>
+  ${comVistoria ? `<div style="page-break-before:always"></div>
   <h2 style="text-align:center">TERMO DE VISTORIA — ENERGIA ELÉTRICA E GÁS</h2>
   <p>Protocolo ${esc(p.protocolo)} · ${esc(d.salao)} · Evento em ${dataBR(d.data)} · Locatário(a): ${pj ? esc(d.empresa || '') : esc(d.locNome || '')}</p>
   <table border="1" cellpadding="8" style="border-collapse:collapse;width:100%">
@@ -996,7 +1005,37 @@ function contratoHTML(p) {
     <tr><td><b>Gás</b><br><small>unidade: ________</small></td><td>${esc(d.gasIni || '')}</td><td>${esc(d.gasFim || '')}</td><td></td><td></td><td></td></tr>
     <tr><td colspan="5" align="right"><b>Total dos consumos</b></td><td></td></tr></table>
   <p>Estado do salão, equipamentos e utensílios (conforme inventário): ____________________________________________<br>______________________________________________________________________________</p>
-  <table style="width:100%;margin-top:40px;text-align:center"><tr><td>______________________________<br>LOCADORA</td><td>______________________________<br>LOCATÁRIO(A)</td></tr></table>`;
+  <table style="width:100%;margin-top:40px;text-align:center"><tr><td>______________________________<br>LOCADORA</td><td>______________________________<br>LOCATÁRIO(A)</td></tr></table>` : ''}`;
+}
+const camposFaltandoContrato = p => [...camposContrato(MODELOS.salao, p.dados), ...MODELOS.salao.etapas[2].pede].filter(c => c.obrig && !p.dados[c.k]);
+function caixaContrato(p) {
+  return `<div class="contrato-doc" tabindex="0" aria-label="Texto do contrato">${contratoHTML(p, false)}</div>`;
+}
+/* Secretaria: conferência do contrato gerado antes de enviar pelo app */
+function conferenciaContrato(p) {
+  const falta = camposFaltandoContrato(p);
+  const cond = MODELOS.salao.etapas[2].pede;
+  return `<section class="card"><h3>Contrato gerado — confira antes de enviar</h3>
+    <p class="muted">O app montou o contrato com os dados enviados pelo locatário. Confira nomes, documentos, datas e valores. Se algo estiver errado nos dados do locatário, use “Registrar situação alternativa → Devolvida para ajustes”.</p>
+    ${falta.length ? `<p class="alerta">Faltam dados: ${falta.map(c => esc(c.rot)).join('; ')}.</p>` : ''}
+    ${caixaContrato(p)}
+    <details style="margin-top:10px"><summary>Ajustar valor e condições de pagamento</summary>
+      ${cond.map(c => campoHTML(c, p.dados[c.k], 'cond')).join('')}
+      <div class="actions"><button class="btn outline small" data-acao="salaoAjustarCond">Salvar condições</button></div></details>
+  </section>`;
+}
+/* Locatário: leitura do contrato enviado pela Secretaria */
+function leituraContrato(p) {
+  return `<div class="bloco"><b>Seu contrato chegou! Leia com atenção antes da assinatura</b>
+    <p class="muted">Enviado pela Secretaria em ${dataHoraBR(p.contratoEnviadoEm)}${p.contratoVersao > 1 ? ` (versão ${p.contratoVersao})` : ''}. A assinatura será presencial, na Secretaria.</p>
+    ${caixaContrato(p)}
+    <div class="actions"><button class="btn outline small" data-acao="procImprimir">Imprimir ou salvar em PDF</button></div>
+    <label class="check"><input type="checkbox" id="ct-leu"> Li o contrato completo e estou de acordo com ele</label>
+    <div class="actions"><button class="btn" data-acao="salaoLeuContrato">Confirmar leitura</button></div>
+    <details style="margin-top:10px"><summary>Encontrei um erro / quero pedir correção</summary>
+      <label for="ct-correcao">O que precisa ser corrigido?</label><textarea id="ct-correcao" rows="3"></textarea>
+      <div class="actions"><button class="btn wine small" data-acao="salaoPedirCorrecao">Pedir correção à Secretaria</button></div></details>
+  </div>`;
 }
 
 function telaProcesso() {
@@ -1015,6 +1054,7 @@ function telaProcesso() {
   const corrigirContrato = p.modelo === 'salao' && p.alt === 'Devolvida para ajustes' && p.etapa === 3 && (sec || (pessoaAtual() && p.origem === pessoaAtual().id));
   if (corrigirContrato) avancar = formDadosContrato(p, true);
   else if (prox && !p.alt && prox.dadosContrato && podeConduzir(p, p.etapa + 1)) avancar = formDadosContrato(p, false);
+  else if (prox && !p.alt && prox.leituraContrato && podeConduzir(p, p.etapa + 1)) avancar = leituraContrato(p);
   else if (prox && !p.alt) {
     if (podeConduzir(p, p.etapa + 1)) {
       const bloqueioDocs = prox.gateDocs && docsPendentes(p).length;
@@ -1060,10 +1100,12 @@ function telaProcesso() {
       ${barraProgresso(p)}
     </section>
     ${p.modelo === 'salao' && p.etapa >= 2 && !(p.alt && ALT_ENCERRA.includes(p.alt)) && !procEncerrado(p) ? lembretesContrato(p) : ''}
-    ${avancar || alt ? `<section class="card"><h3>Conduzir processo</h3>${avancar}${alt}</section>` : ''}
+    ${p.modelo === 'salao' && sec && p.etapa === 3 && !p.alt ? conferenciaContrato(p) : ''}
+    ${avancar || alt ? `<section class="card"><h3>${sec || temFuncao('lideranca') ? 'Conduzir processo' : 'Sua próxima ação'}</h3>${avancar}${alt}</section>` : ''}
     ${docs}
     <section class="card"><h3>Dados do pedido</h3>${linhas}${extras}
       ${p.modelo === 'salao' && sec && p.etapa >= 3 ? '<div class="actions"><button class="btn outline" data-acao="procImprimir">Imprimir contrato preenchido</button></div><p class="muted">Contrato físico, no modelo oficial da Paróquia (com termo de vistoria de luz e gás). Assinatura presencial; não há assinatura eletrônica.</p>' : ''}
+      ${p.modelo === 'salao' && !sec && p.etapa >= 5 && p.contratoEnviadoEm ? `<details style="margin-top:10px"><summary>Ver meu contrato</summary>${caixaContrato(p)}<div class="actions"><button class="btn outline small" data-acao="procImprimir">Imprimir ou salvar em PDF</button></div></details>` : ''}
       ${p.modelo === 'salao' && sec && p.etapa === 2 ? '<p class="muted">O contrato poderá ser impresso quando o locatário enviar os dados pelo aplicativo (ou a Secretaria preencher por ele).</p>' : ''}
     </section>
     ${sec && (p.comunicar || p.alt) ? `<section class="card"><p class="alerta">Há decisão ou pendência a comunicar ao solicitante.</p><div class="actions"><button class="btn small outline" data-acao="marcarComunicado">Comunicado por telefone/presencialmente</button></div></section>` : ''}
@@ -1731,8 +1773,14 @@ const ACOES = {
       if (c.some(reservaConfirmada)) return alert('Já existe reserva CONFIRMADA para este salão neste horário (' + c.filter(reservaConfirmada).map(o => o.protocolo).join(', ') + '). Registre “Data indisponível”.');
       if (c.length && !confirm('Há outro pedido em análise para o mesmo salão e horário (' + c.map(o => o.protocolo).join(', ') + '). Aprovar mesmo assim?')) return;
     }
+    if (E.enviaContrato) {
+      const falta = camposFaltandoContrato(p);
+      if (falta.length) return alert('O contrato ainda tem dados faltando:\n- ' + falta.map(c => c.rot).join('\n- '));
+      if (!confirm('Enviar o contrato pelo app para o locatário ler? Confira antes nomes, documentos, datas e valores.')) return;
+    }
     Object.assign(p.dados, pede);
     p.etapa++;
+    if (E.enviaContrato) { p.contratoVersao = (p.contratoVersao || 0) + 1; p.contratoEnviadoEm = agoraISO(); }
     if (E.iniciaPrazo) p.prazo = addDiasUteis(hojeISO(), CONFIG.prazoCertidaoDiasUteis);
     historico(p, E.n, valor('proc-obs'));
     if (E.msg && p.dados.consente) { p.comunic.push({ em: agoraISO(), por: nomeAtual(), situacao: 'mensagem preparada (' + E.msg + ')' }); estado.msgAberta = E.msg; }
@@ -1755,7 +1803,29 @@ const ACOES = {
       <style>body{font:13.5px/1.5 Georgia,serif;padding:28px;max-width:780px;margin:auto;text-align:justify}h3{font-size:13.5px;margin:16px 0 4px;text-align:center}p{margin:6px 0}@media print{body{padding:0}}</style>
       <body>${contratoHTML(p)}<script>print()<\/script></body>`);
     w.document.close();
-    historico(p, 'Contrato preenchido impresso'); salvar();
+    historico(p, ehSecretaria() ? 'Contrato preenchido impresso' : 'Locatário abriu o contrato para imprimir/salvar'); salvar();
+  },
+  salaoAjustarCond() {
+    const p = procPorId(estado.proc); if (!ehSecretaria() && !ehPadre(pessoaAtual())) return;
+    const cond = MODELOS.salao.etapas[2].pede; const v = lerCampos(cond, 'cond');
+    const falta = cond.filter(c => c.obrig && !v[c.k]); if (falta.length) return alert('Preencha: ' + falta.map(c => c.rot).join(', ') + '.');
+    Object.assign(p.dados, v); historico(p, 'Condições de pagamento ajustadas', `${reais(v.valorBase)} · ${dataBR(v.pagData)} · ${v.pagForma}`);
+    ir('Condições salvas. O contrato foi atualizado.');
+  },
+  salaoLeuContrato() {
+    const p = procPorId(estado.proc); const E = MODELOS.salao.etapas[p.etapa + 1];
+    if (!E || !E.leituraContrato || p.alt || !podeConduzir(p, p.etapa + 1)) return alert('Este contrato não está disponível para confirmação.');
+    if (!document.getElementById('ct-leu').checked) return alert('Marque que leu o contrato completo e está de acordo.');
+    p.etapa++; historico(p, E.n, `Versão ${p.contratoVersao || 1} enviada em ${dataHoraBR(p.contratoEnviadoEm)}`); p.comunicar = false;
+    ir('Leitura confirmada. A Secretaria vai imprimir o contrato e combinar a assinatura presencial.');
+  },
+  salaoPedirCorrecao() {
+    const p = procPorId(estado.proc); const E = MODELOS.salao.etapas[p.etapa + 1];
+    if (!E || !E.leituraContrato || p.alt || !podeConduzir(p, p.etapa + 1)) return alert('Não disponível.');
+    const t = valor('ct-correcao'); if (!t) return alert('Escreva o que precisa ser corrigido.');
+    p.etapa = 3; p.alt = 'Devolvida para ajustes'; p.pendencias = 'Correção pedida pelo locatário: ' + t;
+    historico(p, 'Locatário pediu correção do contrato', t); p.comunicar = true;
+    ir('Pedido de correção enviado. Corrija seus dados abaixo, se for o caso; a Secretaria confere e reenvia o contrato.');
   },
   salaoDadosContrato() {
     const p = procPorId(estado.proc); const M = MODELOS.salao;

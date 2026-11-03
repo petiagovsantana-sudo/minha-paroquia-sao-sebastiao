@@ -1,5 +1,5 @@
 /* Service worker simples: rede primeiro (sempre a versão mais nova), cache como reserva offline. */
-const CACHE = 'minha-paroquia-v8';
+const CACHE = 'minha-paroquia-v9';
 const ARQUIVOS = ['./', './index.html', './app.js', './ivc.js', './logo.png', './padrao.png', './manifest.webmanifest'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => {
